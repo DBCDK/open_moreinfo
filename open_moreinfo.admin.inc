@@ -11,14 +11,13 @@
  * */
 function open_moreinfo_form_ting_client_admin_webservices_settings_alter(&$form, &$form_state) {
 
-  $form['moreinfo'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('MoreInfo settings'),
-    '#description' => t('The MoreInfo service is used to retrieve cover images and other information about objects. <a href="http://www.danbib.dk/index.php?doc=forsideservice">More information about the service (in Danish)</a>'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-    '#tree' => FALSE,
-  );
+  // don't start by defining the fieldset as an array. This way other modules can extend the fieldset.
+  $form['moreinfo']['#type'] = 'fieldset';
+  $form['moreinfo']['#title'] = t('MoreInfo settings');
+  $form['moreinfo']['#description'] = t('The MoreInfo service is used to retrieve cover images and other information about objects. <a href="http://www.danbib.dk/index.php?doc=forsideservice">More information about the service (in Danish)</a>');
+  $form['moreinfo']['#collapsible'] = TRUE;
+  $form['moreinfo']['#collapsed'] = FALSE;
+  $form['moreinfo']['#tree'] = FALSE;
 
   $form['moreinfo']['open_moreinfo_url'] = array(
     '#type' => 'textfield',
