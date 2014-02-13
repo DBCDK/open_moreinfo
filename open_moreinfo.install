@@ -20,27 +20,10 @@ function open_moreinfo_schema() {
  */
 function open_moreinfo_install() {
 
-/**
- * Bootstrap Error codes constants
- */
-
-/*
-  t('service_unavailable', array(), array('context' => 'open_holdingstatus'));
-  t('error_in_request', array(), array('context' => 'open_holdingstatus'));
-  t('service_not_supported_by_library', array(), array('context' => 'open_holdingstatus'));
-  t('cannot_parse_library_answer', array(), array('context' => 'open_holdingstatus'));
-  t('item_not_found', array(), array('context' => 'open_holdingstatus'));
-  t('error_searching_library', array(), array('context' => 'open_holdingstatus'));
-  t('error_fetching_request_order', array(), array('context' => 'open_holdingstatus'));
-  t('no_holding_return_from_library', array(), array('context' => 'open_holdingstatus'));
-  t('no_holdings_specified_by_library', array(), array('context' => 'open_holdingstatus'));
-  t('authentication_error', array(), array('context' => 'open_holdingstatus'));
-  t('agency_not_found', array(), array('context' => 'open_holdingstatus'));
-  t('no_agencies_found', array(), array('context' => 'open_holdingstatus'));
-*/
+  $directory = file_default_scheme() . '://moreinfo';
+  $result = file_prepare_directory($directory, FILE_MODIFY_PERMISSIONS | FILE_CREATE_DIRECTORY);
 
 }
 
 function open_moreinfo_update_7001() {
-  // define('OPEN_MOREINFO_CACHE_LIFETIME', 86400);
 }

@@ -52,30 +52,19 @@ function open_moreinfo_flush_caches() {
  */
 function _open_moreinfo_delete_old_files($time = NULL) {
 
+  $moreinfo_files = array();
+
   //Collect potential locations of cover folders
-  $files_dir = file_default_scheme() . '://';
-  $image_dirs = array($files_dir);
-
-  $styles_dir = $files_dir . 'styles';
-  foreach ( scandir($styles_dir) as $style_dir ) {
-    $style_dir = $styles_dir . DIRECTORY_SEPARATOR . $style_dir . DIRECTORY_SEPARATOR . 'public';
-    if ( is_dir($style_dir) ) {
-      $image_dirs[] = $style_dir;
-    }
-  }
-
-  //Collect cover files
-  $cover_files = array();
-  foreach ( $image_dirs as $uri ) {
-    # TO DO: Loop over ALL moreinfo types.
-    $ting_covers_dir = $uri . DIRECTORY_SEPARATOR . 'ting' . DIRECTORY_SEPARATOR . 'covers' . DIRECTORY_SEPARATOR . 'frontcover_jpg';
-    if ( is_dir($ting_covers_dir) ) {
-      $cover_files = array_merge($cover_files, _open_moreinfo_get_files($ting_covers_dir));
+  $moreinfo = new moreInfo();
+  foreach ( $moreinfo->getTypes() as $object_type ) {
+    $files_dir = file_default_scheme() . '://moreinfo/' . $object_type;
+    if ( is_dir($files_dir) ) {
+      $moreinfo_files = array_merge($moreinfo_files, _open_moreinfo_get_files($files_dir));
     }
   }
 
   //Delete obsolete files
-  foreach ( $cover_files as $file ) {
+  foreach ( $moreinfo_files as $file ) {
     if ( !$time || (filemtime($file) < $time) ) {
       file_unmanaged_delete($file);
     }
@@ -132,7 +121,9 @@ function open_moreinfo_object_path($object_id, $object_type = NULL) {
 
   if ( !file_exists($path) ) {
 
-    $path = open_moreinfo_get_objects($object_id, $object_type);
+    $moreinfo = open_moreinfo_get_objects($object_id, $object_type);
+
+    $path = $moreinfo[$object_id][$object_type];
 
   }
 
@@ -144,7 +135,7 @@ function open_moreinfo_object_path($object_id, $object_type = NULL) {
 
 /**
  * Download images and pdf documents
- * Return the URL for the object
+ * Return the URLs for the object
  */
 function open_moreinfo_get_objects($object_id, $object_type = NULL) {
 
@@ -152,18 +143,18 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
     $object_id = array($object_id);
   }
 
-  $objects = $ids = array();
+  $objects[] = $ids = array();
   $moreinfo_object = new moreInfo();
 
   foreach ( $object_id as $local_id ) { // ex. [0] => 29316627
-
     //Determine if the local id is a known negative
-    // if ( !cache_get('ting_covers:' . $local_id, FALSE) ) {
     if ( !cache_get('open_moreinfo:' . $object_type . ':' . $local_id, FALSE) ) {
       //Mark the image for retrieval;
       $ids[] = $local_id;
     }
-
+    else {
+      $objects[$local_id][$object_type] = NULL;
+    }
   }
 
   //Try to download the missing images
@@ -182,27 +173,27 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
       $moreinfo = $service->getByFaustNumber($local_id);
 
       foreach ( $moreinfo[$local_id]->getTypes() as $type ) {
-        $objects[ $local_id . ':' . $type ] = NULL;
+        $objects[$local_id][$type] = NULL;
         if ( !$moreinfo[$local_id]->$type ) {
-        //No object found? Cache this for future reference to avoid unnecessary requests
-          cache_set('open_moreinfo:' . $type . ':' . $local_id, 1, 'cache', $_SERVER['REQUEST_TIME'] + OPEN_MOREINFO_CACHE_LIFETIME);
+          //No object found? Cache this for future reference to avoid unnecessary requests
+          cache_set('open_moreinfo:' . $type . ':' . $local_id, 1, 'cache', $_SERVER['REQUEST_TIME'] + variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
         } else {
           $filetype = $moreinfo_object->getFileType($type);
           if ( $file = _open_moreinfo_fetch_object($local_id, $type, $filetype, $moreinfo[$local_id]->$type) ) {
             //Generate a path corresponding to the downloaded image
-            $objects[ $local_id . ':' . $type ] = $GLOBALS['base_url'] . '/sites/default/files/moreinfo/' . $type . '/' . md5($local_id) . $moreinfo[$local_id]->getFileType($type);
+            $objects[$local_id][$type] = $GLOBALS['base_url'] . '/sites/default/files/moreinfo/' . $type . '/' . md5($local_id) . $moreinfo[$local_id]->getFileType($type);
           }
         }
       }
 
     }
   } catch (Exception $e) {
-    watchdog('ting_covers', 'Unable to retrieve covers from moreInfo: %message', array('%message' => $e->getMessage()), WATCHDOG_ERROR);
+    watchdog('ting_covers', 'Unable to retrieve info from moreInfo: %message', array('%message' => $e->getMessage()), WATCHDOG_ERROR);
   }
 
   // Return all image information
-  // ex. 29316627:detailUrl      => http://domain.dk/path/to/type/detailUrl/md5id.jpg
-  // ex. 29316627:backpagePdfUrl => http://domain.dk/path/to/type/backpagePdfUrl/md5id.pdf
+  // ex. [29316627][detailUrl]      => http://domain.dk/path/to/type/detailUrl/md5id.jpg
+  // ex. [29316627][backpagePdfUrl] => http://domain.dk/path/to/type/backpagePdfUrl/md5id.pdf
   return($objects);
 }
 

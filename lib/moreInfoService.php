@@ -217,10 +217,14 @@ class moreInfoService {
           $backpagePdfUrl = $info->backPage->_;
         }
 
-        // just pick the netarchive PDF URL, if there's several
-        if ( !$netarchivePdfUrl && isset($info->netArchive->_) && $info->netArchive->_ ) {
+        // just pick the first netarchive PDF URL, if there's several
+        if ( is_array($info->netArchive)  && isset($info->netArchive[0]->_) ) {
+          $netarchivePdfUrl = $info->netArchive[0]->_;
+        }
+        if ( !$netarchivePdfUrl && isset($info->netArchive->_) ) {
           $netarchivePdfUrl = $info->netArchive->_;
         }
+
 
         $moreInfo = new moreInfo($thumbnailUrl, $detailUrl, $backpagePdfUrl, $netarchivePdfUrl);
 
