@@ -181,7 +181,8 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
           $filetype = $moreinfo_object->getFileType($type);
           if ( $file = _open_moreinfo_fetch_object($local_id, $type, $filetype, $moreinfo[$local_id]->$type) ) {
             //Generate a path corresponding to the downloaded image
-            $objects[$local_id][$type] = $GLOBALS['base_url'] . '/sites/default/files/moreinfo/' . $type . '/' . md5($local_id) . $moreinfo[$local_id]->getFileType($type);
+            $objects[$local_id][$type] = file_default_scheme() . '://moreinfo/' . $type . '/' . md5($local_id) . $moreinfo[$local_id]->getFileType($type);
+
           }
         }
       }
