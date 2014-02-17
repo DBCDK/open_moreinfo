@@ -54,8 +54,9 @@ class moreInfoService {
   public function getByFaustNumber($faustNumber) {
 
    //quickfix for test only
-    if (isset($faustNumber[0]) && $faustNumber[0] == '12345678'){
-      return unserialize('a:1:{i:12345678;O:21:"AdditionalInformation":2:{s:12:"thumbnailUrl";s:101:"http://moreinfo.addi.dk/2.1/more_info_get.php?id=12345678&type=forside_lille&key=e2319192f842be20cbe1";s:9:"detailUrl";s:100:"http://moreinfo.addi.dk/2.1/more_info_get.php?id=12345678&type=forside_stor&key=b3059e12e14a20f6cddf";}}');
+    if ( $faustNumber == '12345678' ){
+      $moreInfos['12345678'] = new moreInfo(_get_test_image_url(), _get_test_image_url(), '', '');
+      return $moreInfos;
     }
 
     $identifiers = $this->collectIdentifiers('faust', $faustNumber);

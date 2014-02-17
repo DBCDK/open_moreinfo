@@ -2,83 +2,94 @@
 
 /**
  * @file
- * Test case for OpenHldingsStatus localisation & holdings.
+ * Test case for moreInfo client.
  */
 
-class LocalisationRequestTestCase extends DrupalUnitTestCase {
-
-  private  $holdings_ok;
-  private  $holdings_ok_result;
-  private  $holdings_none;
-  private  $holdings_none_result;
+class moreInfoWebTestCase extends DrupalWebTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => t('Open holdingstatus : LocalisationRequest test'),
-      'description' => t('Check if parsing a localisationRequest return a valid array of localisations'),
-      'group' => t('bibliotek.dk'),
+      'name' => t('Open MoreInfo client : web test'),
+      'description' => 'Check if we can retrieve covers and pdf files',
+      'group' => t('Open Library'),
     );
   }
+
 
   public function setUp() {
-    parent::setUp(array('open_holdingstatus'));
-  }
-
-  function test_parse_localisationRequest() {
-    module_load_include('module', 'open_holdingstatus', 'open_holdingstatus');
-    $file = file_get_contents(drupal_get_path('module', 'open_holdingstatus') . '/test/mockup/holdings_ok.json');
-
-    $this->holdings_ok = json_decode($file);
-    $result = _open_holdingstatus_parse_localisationsRequest($this->holdings_ok);
-
-    $this->holdings_ok_result = file_get_contents(drupal_get_path('module', 'open_holdingstatus') . '/test/mockup/holdings_ok.array.php');
-    $result = ( serialize($result) == $this->holdings_ok_result );
-    $message = 'LocalisationRequest with 16 localisations is parsed correctly';
-    $this->assertTrue($result, $message);
-  }
-
-  function test_parse_empty_localisationRequest() {
-    $file = file_get_contents(drupal_get_path('module', 'open_holdingstatus') . '/test/mockup/holdings_none.json');
-    $this->holdings_ok = json_decode($file);
-    $result = _open_holdingstatus_parse_localisationsRequest($this->holdings_ok);
-    $this->holdings_none_result = file_get_contents(drupal_get_path('module', 'open_holdingstatus') . '/test/mockup/holdings_none.array.php');
-    $result = ( serialize($result) == $this->holdings_none_result );
-    $message = 'LocalisationRequest with 0 localisations is parsed correctly';
-    $this->assertTrue($result, $message);
-  }
-}
-
-class OpenHoldingStatusWebTestCase extends DrupalWebTestCase {
-  public static function getInfo() {
-    return array(
-      'name' => t('Open holdingstatus : webservice test'),
-      'description' => t('Check if webserviceRequest returns valid results'),
-      'group' => t('bibliotek.dk'),
+    $moreinfo_info = array(
+      'url' => 'http://moreinfo.addi.dk/2.1/moreinfo.wsdl',
+      'username' => 'netpunkt',
+      'group'    => '010100',
+      'password' => '20Koster'
     );
+    $this->profile = 'minimal';
+    parent::setUp(array('open_moreinfo'));
+
+    //All variables have been reset to set these again!
+    foreach ($moreinfo_info as $k => $v) {
+      variable_set('open_moreinfo_'.$k, $v);
+    }
+
+    // allow you to log messages with error_log() to "sites/default/files/test.log"
+    $logfile = conf_path() . '/files/test.log';
+    ini_set('log_errors', 1);
+    ini_set('error_log', $logfile);
+
+    $this->web_user = $this->drupalCreateUser(array('access content'));
+    $this->drupalLogin($this->web_user);
   }
 
-  public function setUp() {
-    module_enable(array('open_holdingstatus_webservice_mockup'));
-    menu_rebuild();
-    parent::setUp(array('open_holdingstatus', 'open_holdingstatus_webservice_mockup'));
-    variable_set('open_holdingstatus_url', $this->getAbsoluteUrl('/open_holdingstatus_webservice/'));
+
+  public function testRunner() {
+    $this->testObjectPath();
+    $this->testOpenMoreinfoFetchObject();
+    $this->testOpenMoreinfoGetObjects();
   }
 
-  public function testLocalizationAndHoldingsRequest(){
-    $pids = array('870970-basis:28542941', '870970-basis:28794932');
-    $expected_localisation_pid = '870970-basis:28794932';
-    $agency_id = 'DK-870970';
-    $localizations = open_holdingstatus_localisationRequest($pids, $agency_id);
-    $this->assertTrue(
-      !empty($localizations['agencies']['715100']['holdings']['870970-basis:28794932']['localisationPid']) &&
-      $localizations['agencies']['715100']['holdings']['870970-basis:28794932']['localisationPid'] == $expected_localisation_pid,
-      'lozalizations are set'
-    );
-    $this->verbose(print_r($localizations['agencies']['715100']['holdings']['870970-basis:28794932'],1));
-    $agency_ids = array('DK-870970', 'DK-720100', 'DK-710100');
-    $holdings  = open_holdingstatus_holdingsRequest($agency_ids, $pids[0]);
-    $this->assertTrue(count($holdings) == 3, 'Errors and Responders have been merged');
-    $this->assertTrue($holdings[0]->willLend->{'$'}, 'first holdingStatus result WillLend');
-    $this->assertTrue($holdings[2]->errorMessage->{'$'} == 'item_not_found', 'third holdingStatus result has errorMessage item_not_found');
+
+  private function testObjectPath() {
+    // can't be done as unit test since it's got a call to watchdog()
+
+    $result = open_moreinfo_object_path(NULL, 'foobar');
+    $this->assertTrue($result == NULL, 'open_moreinfo_object_path() return NULL if object_id is empty');
+
+    $result = open_moreinfo_object_path('12345678', NULL);
+    $this->assertTrue($result == NULL, 'open_moreinfo_object_path() return NULL if object_type is empty');
+
+    $result = open_moreinfo_object_path('12345678', '');
+    $this->assertTrue($result == NULL, 'open_moreinfo_object_path() return NULL if object_type is not valid');
+
+    $expected = 'public://moreinfo/thumbnailUrl/' . md5('12345678') . '.jpg';
+    $result = open_moreinfo_object_path('12345678', 'thumbnailUrl');
+    $this->assertTrue($result == $expected, 'open_moreinfo_object_path() return path if object_type is valid, and object_id is valid');
+
   }
+
+
+  private function testOpenMoreinfoFetchObject() {
+    global $base_url;
+
+    $url = 'http://foobarbas.dk/fubar.php?id=test';
+    $result = _open_moreinfo_fetch_object('foo', 'bar', 'baz', $url);
+    $this->assertTrue($result == FALSE, '_open_moreinfo_fetch_object() return FALSE if object_url is not found');
+
+    $url = _get_test_image_url();
+    $result = _open_moreinfo_fetch_object(12345678, 'thumbnailUrl', 'jpg', $url);
+    $this->assertTrue($result == TRUE, '_open_moreinfo_fetch_object() can fetch and save test image file.');
+
+  }
+
+
+  private function testOpenMoreinfoGetObjects() {
+    $result = open_moreinfo_get_objects('12345678', 'thumbnailUrl');
+    $expected = 'public://moreinfo/thumbnailUrl/' . md5('12345678') . '.jpg';
+    $this->assertTrue($result['12345678']['thumbnailUrl'] == $expected, 'open_moreinfo_get_objects() return "' . $expected . '" if object_id = 12345678');
+
+    $result = open_moreinfo_get_objects('87654321', 'thumbnailUrl');
+    $this->assertTrue($result == array(), 'open_moreinfo_get_objects() return empty array if object_id = 87654321');
+
+  }
+
+
 }
