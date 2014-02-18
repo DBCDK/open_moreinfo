@@ -6,24 +6,14 @@
  */
 
 /**
- * Implements hook_schema().
- */
-function open_moreinfo_schema() {
-  $schema['cache_moreinfo_webservice'] = drupal_get_schema_unprocessed('system', 'cache');
-  return $schema;
-}
-
-
-
-/**
  * Implements hook_install().
  */
 function open_moreinfo_install() {
 
   $directory = file_default_scheme() . '://moreinfo';
-  $result = file_prepare_directory($directory, FILE_MODIFY_PERMISSIONS | FILE_CREATE_DIRECTORY);
-
+  if ( !file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS) ) {
+    drupal_set_message(t('Failed to create directory: %directory'), array('%directory' => $directory, array('context' => 'open_moreinfo:error')), 'error');
+    watchdog('open_moreinfo', 'Failed to create directory: %directory', array('%directory' => $directory), WATCHDOG_ERROR);
+  }
 }
 
-function open_moreinfo_update_7001() {
-}
