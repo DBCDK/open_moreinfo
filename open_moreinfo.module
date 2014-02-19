@@ -97,6 +97,8 @@ function _open_moreinfo_get_files($files_path) {
 
 /**
  * Return the path to the moreInfo object.
+ * @param string PID
+ * @return string
  */
 function open_moreinfo_object_path($object_id, $object_type = NULL) {
 
@@ -122,8 +124,9 @@ function open_moreinfo_object_path($object_id, $object_type = NULL) {
   if ( !file_exists($path) ) {
 
     $moreinfo = open_moreinfo_get_objects($object_id, $object_type);
-
-    $path = $moreinfo[$object_id][$object_type];
+    if ( isset($moreinfo[$object_id]) && isset($moreinfo[$object_id][$object_type]) ) {
+      $path = $moreinfo[$object_id][$object_type];
+    }
 
   }
 
@@ -170,19 +173,21 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
     foreach( $ids as $local_id ) {
 
       //Local ids = Faust numbers.
-      $moreinfo = $service->getByFaustNumber($local_id);
+      $faust_id = explode(':',$local_id);
+      $faust_id = $faust_id[1];
+      $moreinfo = $service->getByFaustNumber($faust_id);
 
       if ( !empty($moreinfo) ) {
-        foreach ( $moreinfo[$local_id]->getTypes() as $type ) {
+        foreach ( $moreinfo[$faust_id]->getTypes() as $type ) {
           $objects[$local_id][$type] = NULL;
-          if ( !$moreinfo[$local_id]->$type ) {
+          if ( !$moreinfo[$faust_id]->$type ) {
             //No object found? Cache this for future reference to avoid unnecessary requests
             cache_set('open_moreinfo:' . $type . ':' . $local_id, 1, 'cache', $_SERVER['REQUEST_TIME'] + variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
           } else {
             $filetype = $moreinfo_object->getFileType($type);
-            if ( $file = _open_moreinfo_fetch_object($local_id, $type, $filetype, $moreinfo[$local_id]->$type) ) {
+            if ( $file = _open_moreinfo_fetch_object($local_id, $type, $filetype, $moreinfo[$faust_id]->$type) ) {
               //Generate a path corresponding to the downloaded image
-              $objects[$local_id][$type] = file_default_scheme() . '://moreinfo/' . $type . '/' . md5($local_id) . $moreinfo[$local_id]->getFileType($type);
+              $objects[$local_id][$type] = file_default_scheme() . '://moreinfo/' . $type . '/' . md5($local_id) . $moreinfo[$faust_id]->getFileType($type);
             }
           }
         }
