@@ -200,8 +200,8 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
   }
 
   // Return all image information
-  // ex. [29316627][detailUrl]      => http://domain.dk/path/to/type/detailUrl/md5id.jpg
-  // ex. [29316627][backpagePdfUrl] => http://domain.dk/path/to/type/backpagePdfUrl/md5id.pdf
+  // ex. [870970-basis:29316627][detailUrl]      => http://domain.dk/path/to/type/detailUrl/md5id.jpg
+  // ex. [870970-basis:29316627][backpagePdfUrl] => http://domain.dk/path/to/type/backpagePdfUrl/md5id.pdf
   return($objects);
 }
 

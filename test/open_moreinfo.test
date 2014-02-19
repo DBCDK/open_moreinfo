@@ -54,14 +54,14 @@ class moreInfoWebTestCase extends DrupalWebTestCase {
     $result = open_moreinfo_object_path(NULL, 'foobar');
     $this->assertTrue($result == NULL, 'open_moreinfo_object_path() return NULL if object_id is empty');
 
-    $result = open_moreinfo_object_path('12345678', NULL);
+    $result = open_moreinfo_object_path('870970-basis:12345678', NULL);
     $this->assertTrue($result == NULL, 'open_moreinfo_object_path() return NULL if object_type is empty');
 
-    $result = open_moreinfo_object_path('12345678', '');
+    $result = open_moreinfo_object_path('870970-basis:12345678', '');
     $this->assertTrue($result == NULL, 'open_moreinfo_object_path() return NULL if object_type is not valid');
 
-    $expected = 'public://moreinfo/thumbnailUrl/' . md5('12345678') . '.jpg';
-    $result = open_moreinfo_object_path('12345678', 'thumbnailUrl');
+    $expected = 'public://moreinfo/thumbnailUrl/' . md5('870970-basis:12345678') . '.jpg';
+    $result = open_moreinfo_object_path('870970-basis:12345678', 'thumbnailUrl');
     $this->assertTrue($result == $expected, 'open_moreinfo_object_path() return path if object_type is valid, and object_id is valid');
 
   }
@@ -82,12 +82,12 @@ class moreInfoWebTestCase extends DrupalWebTestCase {
 
 
   private function testOpenMoreinfoGetObjects() {
-    $result = open_moreinfo_get_objects('12345678', 'thumbnailUrl');
-    $expected = 'public://moreinfo/thumbnailUrl/' . md5('12345678') . '.jpg';
-    $this->assertTrue($result['12345678']['thumbnailUrl'] == $expected, 'open_moreinfo_get_objects() return "' . $expected . '" if object_id = 12345678');
+    $result = open_moreinfo_get_objects('870970-basis:12345678', 'thumbnailUrl');
+    $expected = 'public://moreinfo/thumbnailUrl/' . md5('870970-basis:12345678') . '.jpg';
+    $this->assertTrue($result['870970-basis:12345678']['thumbnailUrl'] == $expected, 'open_moreinfo_get_objects() return "' . $expected . '" if object_id = 870970-basis:12345678');
 
-    $result = open_moreinfo_get_objects('87654321', 'thumbnailUrl');
-    $this->assertTrue($result == array(), 'open_moreinfo_get_objects() return empty array if object_id = 87654321');
+    $result = open_moreinfo_get_objects('870970-basis:87654321', 'thumbnailUrl');
+    $this->assertTrue($result == array(), 'open_moreinfo_get_objects() return empty array if object_id = 870970-basis:87654321');
 
   }
 
