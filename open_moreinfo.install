@@ -6,41 +6,14 @@
  */
 
 /**
- * Implements hook_schema().
- */
-function open_moreinfo_schema() {
-  $schema['cache_moreinfo_webservice'] = drupal_get_schema_unprocessed('system', 'cache');
-  return $schema;
-}
-
-
-
-/**
  * Implements hook_install().
  */
 function open_moreinfo_install() {
 
-/**
- * Bootstrap Error codes constants
- */
-
-/*
-  t('service_unavailable', array(), array('context' => 'open_holdingstatus'));
-  t('error_in_request', array(), array('context' => 'open_holdingstatus'));
-  t('service_not_supported_by_library', array(), array('context' => 'open_holdingstatus'));
-  t('cannot_parse_library_answer', array(), array('context' => 'open_holdingstatus'));
-  t('item_not_found', array(), array('context' => 'open_holdingstatus'));
-  t('error_searching_library', array(), array('context' => 'open_holdingstatus'));
-  t('error_fetching_request_order', array(), array('context' => 'open_holdingstatus'));
-  t('no_holding_return_from_library', array(), array('context' => 'open_holdingstatus'));
-  t('no_holdings_specified_by_library', array(), array('context' => 'open_holdingstatus'));
-  t('authentication_error', array(), array('context' => 'open_holdingstatus'));
-  t('agency_not_found', array(), array('context' => 'open_holdingstatus'));
-  t('no_agencies_found', array(), array('context' => 'open_holdingstatus'));
-*/
-
+  $directory = file_default_scheme() . '://moreinfo';
+  if ( !file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS) ) {
+    drupal_set_message(t('Failed to create directory: %directory'), array('%directory' => $directory, array('context' => 'open_moreinfo:error')), 'error');
+    watchdog('open_moreinfo', 'Failed to create directory: %directory', array('%directory' => $directory), WATCHDOG_ERROR);
+  }
 }
 
-function open_moreinfo_update_7001() {
-  // define('OPEN_MOREINFO_CACHE_LIFETIME', 86400);
-}
