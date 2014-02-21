@@ -154,12 +154,9 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
     if ( !cache_get('open_moreinfo:' . $object_type . ':' . $local_id, FALSE) ) {
       //Mark the image for retrieval;
       $ids[] = $local_id;
-<<<<<<< HEAD
-=======
     }
     else {
       $objects[$local_id][$object_type] = NULL;
->>>>>>> feature/671-webarchive
     }
   }
 
@@ -176,20 +173,6 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
     foreach( $ids as $local_id ) {
 
       //Local ids = Faust numbers.
-<<<<<<< HEAD
-      $moreinfo = $service->getByFaustNumber($local_id);
-
-      foreach ( $moreinfo[$local_id]->getTypes() as $type ) {
-        $objects[ $local_id . ':' . $type ] = NULL;
-        if ( !$moreinfo[$local_id]->$type ) {
-        //No object found? Cache this for future reference to avoid unnecessary requests
-          cache_set('open_moreinfo:' . $type . ':' . $local_id, 1, 'cache', $_SERVER['REQUEST_TIME'] + OPEN_MOREINFO_CACHE_LIFETIME);
-        } else {
-          $filetype = $moreinfo_object->getFileType($type);
-          if ( $file = _open_moreinfo_fetch_object($local_id, $type, $filetype, $moreinfo[$local_id]->$type) ) {
-            //Generate a path corresponding to the downloaded image
-            $objects[ $local_id . ':' . $type ] = $GLOBALS['base_url'] . '/sites/default/files/moreinfo/' . $type . '/' . md5($local_id) . $moreinfo[$local_id]->getFileType($type);
-=======
       $faust_id = explode(':',$local_id);
       $faust_id = $faust_id[1];
       $moreinfo = $service->getByFaustNumber($faust_id);
@@ -206,7 +189,6 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
               //Generate a path corresponding to the downloaded image
               $objects[$local_id][$type] = file_default_scheme() . '://moreinfo/' . $type . '/' . md5($local_id) . $moreinfo[$faust_id]->getFileType($type);
             }
->>>>>>> feature/671-webarchive
           }
         }
       }
@@ -218,13 +200,8 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
   }
 
   // Return all image information
-<<<<<<< HEAD
-  // ex. 29316627:detailUrl      => http://domain.dk/path/to/type/detailUrl/md5id.jpg
-  // ex. 29316627:backpagePdfUrl => http://domain.dk/path/to/type/backpagePdfUrl/md5id.pdf
-=======
   // ex. [870970-basis:29316627][detailUrl]      => http://domain.dk/path/to/type/detailUrl/md5id.jpg
   // ex. [870970-basis:29316627][backpagePdfUrl] => http://domain.dk/path/to/type/backpagePdfUrl/md5id.pdf
->>>>>>> feature/671-webarchive
   return($objects);
 }
 
@@ -251,11 +228,7 @@ function _open_moreinfo_fetch_object($object_id, $object_type, $filetype, $objec
   $filename = file_default_scheme() . '://moreinfo/' . $object_type . '/' . md5($object_id) . $filetype;
 
   // there's a hard-coded test case for faustnr 12345678 in class AdditionalInformationService
-<<<<<<< HEAD
-  if ( $object_url == 'http://moreinfo.addi.dk/2.1/more_info_get.php?id=12345678&type=forside_stor&key=b3059e12e14a20f6cddf' ) {
-=======
   if ( $object_id == '12345678' ) {
->>>>>>> feature/671-webarchive
     $file = new stdClass();
     $file->uri =  'public://moreinfo/filetype/md5id.jpg';
     return $file;
@@ -264,14 +237,9 @@ function _open_moreinfo_fetch_object($object_id, $object_type, $filetype, $objec
   $result = drupal_http_request($object_url);
 
   //Bail if the HTTP request failed
-<<<<<<< HEAD
-  if ( $result->code != 200 ) {
-    watchdog('open_moreinfo', 'HTTP request failed for %object_url.', array('%object_url' => $object_url), WATCHDOG_NOTICE);
-=======
   if ( !empty($result->error) ) {
     error_log("open_moreinfo: HTTP request failed for $object_url. Error: $result->error");
     watchdog('open_moreinfo', 'HTTP request failed for %object_url. Error: %error', array('%object_url' => $object_url, '%error' => $result->error), WATCHDOG_NOTICE);
->>>>>>> feature/671-webarchive
     return FALSE;
   }
 
