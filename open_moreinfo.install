@@ -5,15 +5,4 @@
  * Install file for open_moreinfo
  */
 
-/**
- * Implements hook_install().
- */
-function open_moreinfo_install() {
-
-  $directory = file_default_scheme() . '://moreinfo';
-  if ( !file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS) ) {
-    drupal_set_message(t('Failed to create directory: %directory'), array('%directory' => $directory, array('context' => 'open_moreinfo:error')), 'error');
-    watchdog('open_moreinfo', 'Failed to create directory: %directory', array('%directory' => $directory), WATCHDOG_ERROR);
-  }
-}
 
