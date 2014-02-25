@@ -1,11 +1,10 @@
 name = MoreInfo client
 description = Client for moreinfo, a service that can be used for checking and presenting relevant extra materials to search manifestations.
 core = 7.x
-version = 7.x-0.01
+version = 7.x-0.2
 package = OpenLibrary
 
 files[] = open_moreinfo.module
-files[] = open_moreinfo.request.inc
 files[] = test/open_moreinfo.test
 files[] = lib/moreInfo.php
 files[] = lib/moreInfoException.php
