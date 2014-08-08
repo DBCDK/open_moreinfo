@@ -139,7 +139,7 @@ class moreInfoService {
 
         // Check if the request went through.
         if ($data->requestStatus->statusEnum != 'ok') {
-          throw new moreInfoServiceException($response->requestStatus->statusEnum . ': ' . $response->requestStatus->errorText);
+          throw new moreInfoServiceException($data->requestStatus->statusEnum . ': ' . $data->requestStatus->errorText);
         }
 
         // Move result into the responce object.
