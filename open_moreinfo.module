@@ -124,6 +124,7 @@ function open_moreinfo_object_path($object_id, $object_type = NULL) {
   if ( !file_exists($path) ) {
 
     $moreinfo = open_moreinfo_get_objects($object_id, $object_type);
+
     if ( isset($moreinfo[$object_id]) && isset($moreinfo[$object_id][$object_type]) ) {
       $path = $moreinfo[$object_id][$object_type];
     }
@@ -174,7 +175,7 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
 
       //Local ids = Faust numbers.
       $faust_id = explode(':',$local_id);
-      $faust_id = $faust_id[1];
+      $faust_id = ( isset($faust_id[1]) ) ? $faust_id[1] : $faust_id[0];
       $moreinfo = $service->getByFaustNumber($faust_id);
 
       if ( !empty($moreinfo) ) {
