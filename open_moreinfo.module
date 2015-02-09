@@ -175,7 +175,7 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
 
       //Local ids = Faust numbers.
       $faust_id = explode(':',$local_id);
-      $faust_id = ( isset($faust_id[1]) ) ? $faust_id[1] : $faust_id[0];
+      $faust_id = isset($faust_id[1]) ? $faust_id[1] : $faust_id[0];
       $moreinfo = $service->getByFaustNumber($faust_id);
 
       if ( !empty($moreinfo) ) {
