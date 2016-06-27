@@ -1,7 +1,7 @@
 name = MoreInfo client
 description = Client for moreinfo, a service that can be used for checking and presenting relevant extra materials to search manifestations.
 core = 7.x
-version = 7.x-0.4
+version = 7.x-0.5
 package = OpenLibrary
 
 files[] = open_moreinfo.module
