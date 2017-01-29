@@ -16,7 +16,7 @@ function open_moreinfo_form_ting_client_admin_webservices_settings_alter(&$form,
   $form['moreinfo']['#title'] = t('MoreInfo settings');
   $form['moreinfo']['#description'] = t('The MoreInfo service is used to retrieve cover images and other information about objects. <a href="http://www.danbib.dk/index.php?doc=forsideservice">More information about the service (in Danish)</a>');
   $form['moreinfo']['#collapsible'] = TRUE;
-  $form['moreinfo']['#collapsed'] = FALSE;
+  $form['moreinfo']['#collapsed'] = TRUE;
   $form['moreinfo']['#tree'] = FALSE;
 
   $form['moreinfo']['open_moreinfo_url'] = array(
