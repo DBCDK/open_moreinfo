@@ -117,7 +117,13 @@ class moreInfoService {
                       'authenticationPassword' => $this->password);
 
     // New moreinfo service.
-    $client = new SoapClient($this->wsdlUrl);
+    try{
+      $client = new SoapClient($this->wsdlUrl);
+    }
+    catch(SoapFault $e){
+      watchdog('moreInfo','Error loading wsdl: %wsdl', array('%wsdl'=>$this->wsdlUrl), WATCHDOG_ERROR);
+    }
+
 
     // Record the start time, so we can calculate the difference, once
     // the moreInfo service responds.
