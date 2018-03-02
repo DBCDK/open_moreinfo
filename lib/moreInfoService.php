@@ -116,14 +116,20 @@ class moreInfoService {
                       'authenticationGroup' => $this->group,
                       'authenticationPassword' => $this->password);
 
+    $options = array(
+      'trace' => 1,
+      'exceptions'=> 1,
+      'soap_version'=> SOAP_1_1,
+      'cache_wsdl' => WSDL_CACHE_NONE,
+    );
+
     // New moreinfo service.
     try{
-      $client = new SoapClient($this->wsdlUrl);
+      $client = new SoapClient($this->wsdlUrl, $options);
     }
     catch(SoapFault $e){
       watchdog('moreInfo','Error loading wsdl: %wsdl', array('%wsdl'=>$this->wsdlUrl), WATCHDOG_ERROR);
     }
-
 
     // Record the start time, so we can calculate the difference, once
     // the moreInfo service responds.
@@ -142,6 +148,9 @@ class moreInfoService {
           'authentication' => $authInfo,
           'identifier' => $ids,
         ));
+        
+        $lastRequest = $client->__getLastRequest();
+        watchdog('open_moreinfo', 'Completed SOAP request: %webservice_url. Request body:  %last_request', array('%webservice_url' => $this->wsdlUrl, '%last_request' => $lastRequest), WATCHDOG_NOTICE);
 
         // Check if the request went through.
         if ($data->requestStatus->statusEnum != 'ok') {
