@@ -116,14 +116,20 @@ class moreInfoService {
                       'authenticationGroup' => $this->group,
                       'authenticationPassword' => $this->password);
 
+    $options = array(
+      'trace' => 1,
+      'exceptions'=> 1,
+      'soap_version'=> SOAP_1_1,
+      'cache_wsdl' => WSDL_CACHE_NONE,
+    );
+
     // New moreinfo service.
     try{
-      $client = new SoapClient($this->wsdlUrl);
+      $client = new SoapClient($this->wsdlUrl, $options);
     }
     catch(SoapFault $e){
       watchdog('moreInfo','Error loading wsdl: %wsdl', array('%wsdl'=>$this->wsdlUrl), WATCHDOG_ERROR);
     }
-
 
     // Record the start time, so we can calculate the difference, once
     // the moreInfo service responds.
@@ -142,13 +148,23 @@ class moreInfoService {
           'authentication' => $authInfo,
           'identifier' => $ids,
         ));
+        
+        if (variable_get('open_moreinfo_enable_logging', false)) {
+          $lastRequest = $client->__getLastRequest();
+          watchdog(
+            'open_moreinfo', 'Completed SOAP request: %webservice_url. Request body:  %last_request',
+            array('%webservice_url' => $this->wsdlUrl, '%last_request' => $lastRequest),
+            WATCHDOG_DEBUG,
+            'http://' . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]
+          );
+        }
 
         // Check if the request went through.
         if ($data->requestStatus->statusEnum != 'ok') {
           throw new moreInfoServiceException($data->requestStatus->statusEnum . ': ' . $data->requestStatus->errorText);
         }
 
-        // Move result into the responce object.
+        // Move result into the response object.
         $response->requestStatus = $data->requestStatus;
         if (is_array($data->identifierInformation)) {
           // If more than one element have been found an array is returned.
@@ -169,12 +185,22 @@ class moreInfoService {
       throw new moreInfoServiceException($e->getMessage());
     }
 
-    $stopTime = explode(' ', microtime());
-    $time = floatval(($stopTime[1] + $stopTime[0]) - ($startTime[1] + $startTime[0]));
-
-    //Drupal specific code - consider moving this elsewhere
-    if (variable_get('moreinfo_enable_logging', false)) {
-      watchdog('moreInfo', 'Completed request (' . round($time, 3) . 's): Ids: %ids', array('%ids' => implode(', ', $ids)), WATCHDOG_DEBUG, 'http://' . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
+    // Drupal specific code - consider moving this elsewhere
+    if (variable_get('open_moreinfo_enable_logging', false)) {
+      $stopTime = explode(' ', microtime());
+      $time = floatval(($stopTime[1] + $stopTime[0]) - ($startTime[1] + $startTime[0]));
+      foreach ($identifiers as $loop_ids) {
+        foreach ($loop_ids as $key => $loop_id) {
+          $collect_ids[] = $key . ': ' . $loop_id;
+        }
+      }
+      watchdog(
+        'open_moreinfo',
+        'Completed requests (' . round($time, 3) . 's): Ids: %ids',
+        array('%ids' => implode(', ', $collect_ids)), 
+        WATCHDOG_DEBUG,
+        'http://' . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]
+      );
     }
 
     if ( !is_array($response->identifierInformation) ) {
