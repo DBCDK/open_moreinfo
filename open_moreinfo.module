@@ -151,8 +151,8 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
   $moreinfo_object = new moreInfo();
 
   foreach ( $object_id as $local_id ) { // ex. [0] => 29316627
-    //Determine if the local id is a known negative
-    if ( !cache_get('open_moreinfo:' . $object_type . ':' . $local_id, FALSE) ) {
+    // Determine if the local id is a known negative
+    if ( !cache_get('open_moreinfo:' . $object_type . ':' . $local_id, 'cache') ) {
       //Mark the image for retrieval;
       $ids[] = $local_id;
     }
@@ -182,8 +182,8 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
         foreach ( $moreinfo[$faust_id]->getTypes() as $type ) {
           $objects[$local_id][$type] = NULL;
           if ( !$moreinfo[$faust_id]->$type ) {
-            //No object found? Cache this for future reference to avoid unnecessary requests
-            cache_set('open_moreinfo:' . $type . ':' . $local_id, 1, 'cache', $_SERVER['REQUEST_TIME'] + variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
+            // No object found? Cache this for future reference to avoid unnecessary requests
+            cache_set('open_moreinfo:' . $type . ':' . $local_id, TRUE, 'cache', $_SERVER['REQUEST_TIME'] + variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
           } else {
             $filetype = $moreinfo_object->getFileType($type);
             if ( $file = _open_moreinfo_fetch_object($local_id, $type, $filetype, $moreinfo[$faust_id]->$type) ) {
