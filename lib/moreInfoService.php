@@ -123,21 +123,22 @@ class moreInfoService {
       'cache_wsdl' => WSDL_CACHE_NONE,
     );
 
+    // Start on the responce object.
+    $response = new stdClass();
+    $response->identifierInformation = array();
+
     // New moreinfo service.
     try{
       $client = new SoapClient($this->wsdlUrl, $options);
     }
     catch(SoapFault $e){
       watchdog('moreInfo','Error loading wsdl: %wsdl', array('%wsdl'=>$this->wsdlUrl), WATCHDOG_ERROR);
+      return $response;
     }
 
     // Record the start time, so we can calculate the difference, once
     // the moreInfo service responds.
     $startTime = explode(' ', microtime());
-
-    // Start on the responce object.
-    $response = new stdClass();
-    $response->identifierInformation = array();
 
     // Try to get covers 40 at the time as the service has a limit.
     try {
