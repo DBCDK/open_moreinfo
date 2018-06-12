@@ -37,6 +37,11 @@ class moreInfoService {
 
     $identifiers = $this->collectIdentifiers('isbn', $isbn);
     $response    = $this->sendRequest($identifiers);
+
+    if(empty($response->identifierInformation)){
+      return array();
+    }
+
     return $this->extractAdditionalInformation('isbn', $response);
   }
 
@@ -62,6 +67,9 @@ class moreInfoService {
     $identifiers = $this->collectIdentifiers('faust', $faustNumber);
 
     $response    = $this->sendRequest($identifiers);
+    if(empty($response->identifierInformation)){
+      return array();
+    }
 
     return $this->extractAdditionalInformation('faust', $response);
   }
@@ -80,6 +88,11 @@ class moreInfoService {
   public function getByLocalIdentifier($local_id) {
     $identifiers = $this->collectIdentifiers('localIdentifier', $local_id);
     $response    = $this->sendRequest($identifiers);
+
+    if(empty($response->identifierInformation)){
+      return array();
+    }
+
     return $this->extractAdditionalInformation('localIdentifier', $response);
   }
 
@@ -123,21 +136,22 @@ class moreInfoService {
       'cache_wsdl' => WSDL_CACHE_NONE,
     );
 
+    // Start on the responce object.
+    $response = new stdClass();
+    $response->identifierInformation = array();
+
     // New moreinfo service.
     try{
       $client = new SoapClient($this->wsdlUrl, $options);
     }
     catch(SoapFault $e){
       watchdog('moreInfo','Error loading wsdl: %wsdl', array('%wsdl'=>$this->wsdlUrl), WATCHDOG_ERROR);
+      return $response;
     }
 
     // Record the start time, so we can calculate the difference, once
     // the moreInfo service responds.
     $startTime = explode(' ', microtime());
-
-    // Start on the responce object.
-    $response = new stdClass();
-    $response->identifierInformation = array();
 
     // Try to get covers 40 at the time as the service has a limit.
     try {
@@ -148,7 +162,7 @@ class moreInfoService {
           'authentication' => $authInfo,
           'identifier' => $ids,
         ));
-        
+
         if (variable_get('open_moreinfo_enable_logging', false)) {
           $lastRequest = $client->__getLastRequest();
           watchdog(
@@ -197,7 +211,7 @@ class moreInfoService {
       watchdog(
         'open_moreinfo',
         'Completed requests (' . round($time, 3) . 's): Ids: %ids',
-        array('%ids' => implode(', ', $collect_ids)), 
+        array('%ids' => implode(', ', $collect_ids)),
         WATCHDOG_DEBUG,
         'http://' . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]
       );
