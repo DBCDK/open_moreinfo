@@ -142,7 +142,7 @@ class moreInfoService {
 
     // New moreinfo service.
     try{
-      $client = new SoapClient($this->wsdlUrl, $options);
+      $client = @new SoapClient($this->wsdlUrl, $options);
     }
     catch(SoapFault $e){
       watchdog('moreInfo','Error loading wsdl: %wsdl', array('%wsdl'=>$this->wsdlUrl), WATCHDOG_ERROR);
