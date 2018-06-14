@@ -37,6 +37,11 @@ class moreInfoService {
 
     $identifiers = $this->collectIdentifiers('isbn', $isbn);
     $response    = $this->sendRequest($identifiers);
+
+    if(empty($response->identifierInformation)){
+      return array();
+    }
+
     return $this->extractAdditionalInformation('isbn', $response);
   }
 
@@ -62,6 +67,9 @@ class moreInfoService {
     $identifiers = $this->collectIdentifiers('faust', $faustNumber);
 
     $response    = $this->sendRequest($identifiers);
+    if(empty($response->identifierInformation)){
+      return array();
+    }
 
     return $this->extractAdditionalInformation('faust', $response);
   }
@@ -80,6 +88,11 @@ class moreInfoService {
   public function getByLocalIdentifier($local_id) {
     $identifiers = $this->collectIdentifiers('localIdentifier', $local_id);
     $response    = $this->sendRequest($identifiers);
+
+    if(empty($response->identifierInformation)){
+      return array();
+    }
+
     return $this->extractAdditionalInformation('localIdentifier', $response);
   }
 
@@ -129,7 +142,7 @@ class moreInfoService {
 
     // New moreinfo service.
     try{
-      $client = new SoapClient($this->wsdlUrl, $options);
+      $client = @new SoapClient($this->wsdlUrl, $options);
     }
     catch(SoapFault $e){
       watchdog('moreInfo','Error loading wsdl: %wsdl', array('%wsdl'=>$this->wsdlUrl), WATCHDOG_ERROR);
@@ -149,7 +162,7 @@ class moreInfoService {
           'authentication' => $authInfo,
           'identifier' => $ids,
         ));
-        
+
         if (variable_get('open_moreinfo_enable_logging', false)) {
           $lastRequest = $client->__getLastRequest();
           watchdog(
@@ -198,7 +211,7 @@ class moreInfoService {
       watchdog(
         'open_moreinfo',
         'Completed requests (' . round($time, 3) . 's): Ids: %ids',
-        array('%ids' => implode(', ', $collect_ids)), 
+        array('%ids' => implode(', ', $collect_ids)),
         WATCHDOG_DEBUG,
         'http://' . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]
       );
