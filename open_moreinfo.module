@@ -103,12 +103,12 @@ function _open_moreinfo_get_files($files_path) {
 function open_moreinfo_object_path($object_id, $object_type = NULL) {
 
   if ( empty($object_id) ) {
-    watchdog('moreinfo', 'open_moreinfo_object_path() was called with empty object ID. Object type: %object_type', array('%object_type' => $object_type), WATCHDOG_ERROR);
+    watchdog('moreinfo', 'open_moreinfo_object_path() was called with empty object ID. Object type: %object_type', array('%object_type' => $object_type), WATCHDOG_NOTICE);
     return NULL;
   }
 
   if ( empty($object_type) ) {
-    watchdog('moreinfo', 'open_moreinfo_object_path() was called with empty object type. Object ID: %object_id', array('%object_id' => $object_id), WATCHDOG_ERROR);
+    watchdog('moreinfo', 'open_moreinfo_object_path() was called with empty object type. Object ID: %object_id', array('%object_id' => $object_id), WATCHDOG_NOTICE);
     return NULL;
   }
 
