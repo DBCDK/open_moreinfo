@@ -54,12 +54,21 @@ function _open_moreinfo_delete_old_files($time = NULL) {
 
   $moreinfo_files = array();
 
-  //Collect potential locations of cover folders
+  // Collect potential locations of cover folders
   $moreinfo = new moreInfo();
   foreach ( $moreinfo->getTypes() as $object_type ) {
     $files_dir = file_default_scheme() . '://moreinfo/' . $object_type;
     if ( is_dir($files_dir) ) {
       $moreinfo_files = array_merge($moreinfo_files, _open_moreinfo_get_files($files_dir));
+    }
+  }
+
+  foreach ( $moreinfo->getTypes() as $object_type ) {
+    foreach (image_styles() as $style) {
+      $files_dir = file_default_scheme() . '://styles/' . $style['name'] . '/public/moreinfo/' . $object_type;
+      if ( is_dir($files_dir) ) {
+        $moreinfo_files = array_merge($moreinfo_files, _open_moreinfo_get_files($files_dir));
+      }
     }
   }
 
