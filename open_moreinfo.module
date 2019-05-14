@@ -32,12 +32,20 @@ function open_moreinfo_how_r_u() {
  * Implementation of hook_cron().
  */
 function open_moreinfo_cron() {
+  if(module_exists('image')) {
+    // get default styles
+    $styles = image_styles();
+    foreach($styles as $key => $style){
+      image_style_flush($style);
+    }
+    cache_clear_all('*', 'cache_image','TRUE');
+  }
   _open_moreinfo_delete_old_files($_SERVER['REQUEST_TIME'] - variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
 }
 
 
 /**
- * Implementation of hook_cache_clear().
+ * Implementation of hook_flush_caches.
  */
 function open_moreinfo_flush_caches() {
   _open_moreinfo_delete_old_files();
