@@ -35,12 +35,13 @@ function open_moreinfo_cron() {
   if(module_exists('image')) {
     // get default styles
     $styles = image_styles();
+    // delete
     foreach($styles as $key => $style){
       image_style_flush($style);
     }
-    cache_clear_all('*', 'cache_image','TRUE');
   }
   _open_moreinfo_delete_old_files($_SERVER['REQUEST_TIME'] - variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
+  drupal_flush_all_caches();
 }
 
 
@@ -49,6 +50,9 @@ function open_moreinfo_cron() {
  */
 function open_moreinfo_flush_caches() {
   _open_moreinfo_delete_old_files();
+  if(module_exists('image')) {
+    return array('cache_image');
+  }
 }
 
 
@@ -68,15 +72,6 @@ function _open_moreinfo_delete_old_files($time = NULL) {
     $files_dir = file_default_scheme() . '://moreinfo/' . $object_type;
     if ( is_dir($files_dir) ) {
       $moreinfo_files = array_merge($moreinfo_files, _open_moreinfo_get_files($files_dir));
-    }
-  }
-
-  foreach ( $moreinfo->getTypes() as $object_type ) {
-    foreach (image_styles() as $style) {
-      $files_dir = file_default_scheme() . '://styles/' . $style['name'] . '/public/moreinfo/' . $object_type;
-      if ( is_dir($files_dir) ) {
-        $moreinfo_files = array_merge($moreinfo_files, _open_moreinfo_get_files($files_dir));
-      }
     }
   }
 
