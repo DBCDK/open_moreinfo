@@ -36,6 +36,7 @@ function open_moreinfo_cron() {
     // get default styles
     $styles = image_styles();
     foreach($styles as $key => $style){
+      // delete the images
       image_style_flush($style);
     }
     cache_clear_all('*', 'cache_image','TRUE');
