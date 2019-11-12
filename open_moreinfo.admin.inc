@@ -19,14 +19,6 @@ function open_moreinfo_form_ting_client_admin_webservices_settings_alter(&$form,
   $form['open_moreinfo']['#collapsed'] = TRUE;
   $form['open_moreinfo']['#tree'] = FALSE;
 
-  $form['open_moreinfo']['open_moreinfo_url'] = array(
-    '#type' => 'textfield',
-    '#title' => t('moreinfo url'),
-    '#description' => t('URL to Additional information webservice'),
-    '#required' => TRUE,
-    '#default_value' => variable_get('open_moreinfo_url', ''),
-  );
-
   $form['open_moreinfo']['open_moreinfo_username'] = array(
     '#type' => 'textfield',
     '#title' => t('Username'),
