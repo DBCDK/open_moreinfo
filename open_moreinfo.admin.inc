@@ -14,36 +14,36 @@ function open_moreinfo_form_ting_client_admin_webservices_settings_alter(&$form,
   // don't start by defining the fieldset as an array. This way other modules can extend the fieldset.
   $form['open_moreinfo']['#type'] = 'fieldset';
   $form['open_moreinfo']['#title'] = t('MoreInfo settings');
-  $form['open_moreinfo']['#description'] = t('The MoreInfo service is used to retrieve cover images and other information about objects. <a href="http://www.danbib.dk/index.php?doc=forsideservice">More information about the service (in Danish)</a>');
+  $form['open_moreinfo']['#description'] = t("The MoreInfo service is used to retrieve cover images and other information about objects. <a href='http://www.danbib.dk/index.php?doc=forsideservice'>More information about the service (in Danish)</a>");
   $form['open_moreinfo']['#collapsible'] = TRUE;
   $form['open_moreinfo']['#collapsed'] = TRUE;
   $form['open_moreinfo']['#tree'] = FALSE;
 
-  $form['open_moreinfo']['open_moreinfo_username'] = array(
+  $form['open_moreinfo']['moreInfo_username'] = array(
     '#type' => 'textfield',
     '#title' => t('Username'),
     '#description' => t('Username for the Additional information webservice'),
     '#required' => TRUE,
-    '#default_value' => variable_get('open_moreinfo_username', ''),
+    '#default_value' => variable_get('moreInfo_username', ''),
   );
 
-  $form['open_moreinfo']['open_moreinfo_group'] = array(
+  $form['open_moreinfo']['moreInfo_group'] = array(
     '#type' => 'textfield',
     '#title' => t('Group'),
     '#description' => t('User group for the Additional information webservice'),
     '#required' => TRUE,
-    '#default_value' => variable_get('open_moreinfo_group', ''),
+    '#default_value' => variable_get('moreInfo_group', ''),
   );
 
-  $form['open_moreinfo']['open_moreinfo_password'] = array(
+  $form['open_moreinfo']['moreInfo_password'] = array(
     '#type' => 'textfield',
     '#title' => t('Password'),
     '#description' => t('Password for the Additional information webservice'),
     '#required' => TRUE,
-    '#default_value' => variable_get('open_moreinfo_password', ''),
+    '#default_value' => variable_get('moreInfo_password', ''),
   );
 
-  $form['open_moreinfo']['open_moreinfo_cache_lifetime'] = array(
+  $form['open_moreinfo']['moreInfo_lifetime'] = array(
     '#type' => 'select',
     '#title' => t('MoreInfo cache lifetime'),
     '#options' => array(
@@ -52,13 +52,13 @@ function open_moreinfo_form_ting_client_admin_webservices_settings_alter(&$form,
       '604800' => t("1 week"),
       '2592000' => t("1 month"),
     ),
-    '#default_value' => variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME),
+    '#default_value' => variable_get('moreInfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME),
   );
 
-  $form['open_moreinfo']['open_moreinfo_enable_logging'] = array(
+  $form['open_moreinfo']['moreInfo_enable_logging'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable logging'),
-    '#default_value' => variable_get('open_moreinfo_enable_logging', FALSE),
+    '#default_value' => variable_get('moreInfo_enable_logging', FALSE),
   );
 
 }

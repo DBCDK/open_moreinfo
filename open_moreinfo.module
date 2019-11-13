@@ -13,8 +13,8 @@ define('OPEN_MOREINFO_CACHE_LIFETIME', 604800);
  * */
 function open_moreinfo_ting_client_webservice() {
   $ret = array();
-  $ret['open_moreinfo']['class'] = 'open_moreinfo';
-  $ret['open_moreinfo']['url']   = 'open_moreinfo_url';
+  $ret['moreInfo']['class'] = 'moreInfo';
+  $ret['moreInfo']['url']   = 'moreInfo_url';
   return $ret;
 }
 
@@ -24,7 +24,7 @@ function open_moreinfo_ting_client_webservice() {
  * @return Array
  */
 function open_moreinfo_how_r_u() {
-  return array('MoreInfo' => variable_get('open_moreinfo_url',''));
+  return array('MoreInfo' => variable_get('moreInfo_url',''));
 }
 
 
@@ -175,10 +175,10 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
   try {
 
     $service = new moreInfoService(
-      variable_get('open_moreinfo_url',''),
-      variable_get('open_moreinfo_username',''),
-      variable_get('open_moreinfo_group',''),
-      variable_get('open_moreinfo_password','')
+      variable_get('moreInfo_url',''),
+      variable_get('moreInfo_username',''),
+      variable_get('moreInfo_group',''),
+      variable_get('moreInfo_password','')
     );
 
     foreach( $ids as $local_id ) {
@@ -193,7 +193,7 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
           $objects[$local_id][$type] = NULL;
           if ( !$moreinfo[$faust_id]->$type ) {
             // No object found? Cache this for future reference to avoid unnecessary requests
-            cache_set('open_moreinfo:' . $type . ':' . $local_id, TRUE, 'cache', $_SERVER['REQUEST_TIME'] + variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
+            cache_set('open_moreinfo:' . $type . ':' . $local_id, TRUE, 'cache', $_SERVER['REQUEST_TIME'] + variable_get('moreInfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
           } else {
             $filetype = $moreinfo_object->getFileType($type);
             if ( $file = _open_moreinfo_fetch_object($local_id, $type, $filetype, $moreinfo[$faust_id]->$type) ) {

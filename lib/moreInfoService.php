@@ -163,7 +163,7 @@ class moreInfoService {
           'identifier' => $ids,
         ));
 
-        if (variable_get('open_moreinfo_enable_logging', false)) {
+        if (variable_get('moreInfo_enable_logging', false)) {
           $lastRequest = $client->__getLastRequest();
           watchdog(
             'open_moreinfo', 'Completed SOAP request: %webservice_url. Request body:  %last_request',
@@ -200,7 +200,7 @@ class moreInfoService {
     }
 
     // Drupal specific code - consider moving this elsewhere
-    if (variable_get('open_moreinfo_enable_logging', false)) {
+    if (variable_get('moreInfo_enable_logging', false)) {
       $stopTime = explode(' ', microtime());
       $time = floatval(($stopTime[1] + $stopTime[0]) - ($startTime[1] + $startTime[0]));
       foreach ($identifiers as $loop_ids) {
