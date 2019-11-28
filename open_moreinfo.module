@@ -111,7 +111,6 @@ function _open_moreinfo_get_files($files_path) {
  * @return string
  */
 function open_moreinfo_object_path($object_id, $object_type = NULL) {
-
   if ( empty($object_id) ) {
     watchdog('moreinfo', 'open_moreinfo_object_path() was called with empty object ID. Object type: %object_type', array('%object_type' => $object_type), WATCHDOG_NOTICE);
     return NULL;
@@ -130,19 +129,14 @@ function open_moreinfo_object_path($object_id, $object_type = NULL) {
   }
 
   $path = file_default_scheme() . '://moreinfo/' . $object_type . '/' . md5($object_id) . $moreinfo->getFileType($object_type);
-
   if ( !file_exists($path) ) {
-
     $moreinfo = open_moreinfo_get_objects($object_id, $object_type);
-
     if ( isset($moreinfo[$object_id]) && isset($moreinfo[$object_id][$object_type]) ) {
       $path = $moreinfo[$object_id][$object_type];
     }
-
   }
 
   return $path;
-
 }
 
 
@@ -169,8 +163,6 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
       $objects[$local_id][$object_type] = NULL;
     }
   }
-
-
 
   //Try to download the missing images
   try {
@@ -227,12 +219,6 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
   return($objects);
 }
 
-function _open_moreinfo_parse_localid($rec_id){
-
-}
-
-
-
 /**
  * Helper function to fetch and save a cover image file.
  *
@@ -246,7 +232,6 @@ function _open_moreinfo_parse_localid($rec_id){
  *    A file object or FALSE on error.
  */
 function _open_moreinfo_fetch_object($object_id, $object_type, $filetype, $object_url = FALSE) {
-
   if ( !$object_url ) {
     return FALSE;
   }
