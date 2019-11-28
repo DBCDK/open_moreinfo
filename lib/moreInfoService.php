@@ -130,16 +130,16 @@ class moreInfoService {
    */
   protected function sendRequest($identifiers) {
     $authInfo = array(
-      'authenticationUser'     => $this->username,
-      'authenticationGroup'    => $this->group,
+      'authenticationUser' => $this->username,
+      'authenticationGroup' => $this->group,
       'authenticationPassword' => $this->password,
     );
 
     $options = array(
-      'trace'        => 1,
-      'exceptions'   => 1,
+      'trace' => 1,
+      'exceptions' => 1,
       'soap_version' => SOAP_1_1,
-      'cache_wsdl'   => WSDL_CACHE_NONE,
+      'cache_wsdl' => WSDL_CACHE_NONE,
     );
 
     // Start on the responce object.
@@ -170,7 +170,7 @@ class moreInfoService {
         $data = $client->moreInfo(
           array(
             'authentication' => $authInfo,
-            'identifier'     => $ids,
+            'identifier' => $ids,
           )
         );
 
@@ -181,7 +181,7 @@ class moreInfoService {
             'Completed SOAP request: %webservice_url. Request body:  %last_request',
             array(
               '%webservice_url' => $this->wsdlUrl,
-              '%last_request'   => $lastRequest,
+              '%last_request' => $lastRequest,
             ), WATCHDOG_DEBUG,
             'http://' . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]
           );
@@ -199,15 +199,13 @@ class moreInfoService {
         $response->requestStatus = $data->requestStatus;
         if (is_array($data->identifierInformation)) {
           // If more than one element have been found an array is returned.
-          $response->identifierInformation
-            = array_merge(
+          $response->identifierInformation = array_merge(
             $response->identifierInformation, $data->identifierInformation
           );
         }
         else {
           // If only one "cover" have been request, we need to wrap the data in an array.
-          $response->identifierInformation
-            = array_merge(
+          $response->identifierInformation = array_merge(
             $response->identifierInformation,
             array($data->identifierInformation)
           );
@@ -242,8 +240,8 @@ class moreInfoService {
     }
 
     if (!is_array($response->identifierInformation)) {
-      $response->identifierInformation
-        = array($response->identifierInformation);
+      $response->identifierInformation =
+        array($response->identifierInformation);
     }
 
     return $response;
