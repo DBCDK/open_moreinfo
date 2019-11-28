@@ -42,7 +42,7 @@ class moreInfoService {
     $response = $this->sendRequest($identifiers);
 
     if (empty($response->identifierInformation)) {
-      return [];
+      return array();
     }
 
     return $this->extractAdditionalInformation('isbn', $response);
@@ -74,7 +74,7 @@ class moreInfoService {
 
     $response = $this->sendRequest($identifiers);
     if (empty($response->identifierInformation)) {
-      return [];
+      return array();
     }
 
     return $this->extractAdditionalInformation('faust', $response);
@@ -95,7 +95,7 @@ class moreInfoService {
     $response = $this->sendRequest($local_id);
 
     if (empty($response->identifierInformation)) {
-      return [];
+      return array();
     }
 
     return $this->extractAdditionalInformation('localIdentifier', $response);
@@ -107,10 +107,10 @@ class moreInfoService {
    */
   protected function collectIdentifiers($id_type, $ids) {
     if (!is_array($ids)) {
-      $ids = [$ids];
+      $ids = array($ids);
     }
 
-    $identifiers = [];
+    $identifiers = array();
     foreach ($ids as $id) {
       // If we're passed objects from getByLocalIdentifier, convert them
       // to arrays.
@@ -118,7 +118,7 @@ class moreInfoService {
         $identifiers[] = (array) $id;
       } // Otherwise, just map the ID type to the ID number.
       else {
-        $identifiers[] = [$id_type => $id];
+        $identifiers[] = array($id_type => $id);
       }
     }
 
@@ -129,30 +129,30 @@ class moreInfoService {
    * Send request to the moreInfo server, returning the data response.
    */
   protected function sendRequest($identifiers) {
-    $authInfo = [
+    $authInfo = array(
       'authenticationUser'     => $this->username,
       'authenticationGroup'    => $this->group,
       'authenticationPassword' => $this->password,
-    ];
+    );
 
-    $options = [
+    $options = array(
       'trace'        => 1,
       'exceptions'   => 1,
       'soap_version' => SOAP_1_1,
       'cache_wsdl'   => WSDL_CACHE_NONE,
-    ];
+    );
 
     // Start on the responce object.
     $response = new stdClass();
-    $response->identifierInformation = [];
+    $response->identifierInformation = array();
 
     // New moreinfo service.
     try {
       $client = @new SoapClient($this->wsdlUrl, $options);
     } catch (SoapFault $e) {
       watchdog(
-        'moreInfo', 'Error loading wsdl: %wsdl', ['%wsdl' => $this->wsdlUrl],
-        WATCHDOG_ERROR
+        'moreInfo', 'Error loading wsdl: %wsdl',
+        array('%wsdl' => $this->wsdlUrl), WATCHDOG_ERROR
       );
 
       return $response;
@@ -168,10 +168,10 @@ class moreInfoService {
       $ids = array_slice($identifiers, $offset, 40);
       while (!empty($ids)) {
         $data = $client->moreInfo(
-          [
+          array(
             'authentication' => $authInfo,
             'identifier'     => $ids,
-          ]
+          )
         );
 
         if (variable_get('open_moreinfo_enable_logging', FALSE)) {
@@ -179,10 +179,10 @@ class moreInfoService {
           watchdog(
             'open_moreinfo',
             'Completed SOAP request: %webservice_url. Request body:  %last_request',
-            [
+            array(
               '%webservice_url' => $this->wsdlUrl,
               '%last_request'   => $lastRequest,
-            ], WATCHDOG_DEBUG,
+            ), WATCHDOG_DEBUG,
             'http://' . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]
           );
         }
@@ -208,7 +208,8 @@ class moreInfoService {
           // If only one "cover" have been request, we need to wrap the data in an array.
           $response->identifierInformation
             = array_merge(
-            $response->identifierInformation, [$data->identifierInformation]
+            $response->identifierInformation,
+            array($data->identifierInformation)
           );
         }
 
@@ -235,14 +236,14 @@ class moreInfoService {
       watchdog(
         'open_moreinfo',
         'Completed requests (' . round($time, 3) . 's): Ids: %ids',
-        ['%ids' => implode(', ', $collect_ids)], WATCHDOG_DEBUG,
+        array('%ids' => implode(', ', $collect_ids)), WATCHDOG_DEBUG,
         'http://' . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]
       );
     }
 
     if (!is_array($response->identifierInformation)) {
       $response->identifierInformation
-        = [$response->identifierInformation];
+        = array($response->identifierInformation);
     }
 
     return $response;
@@ -254,7 +255,7 @@ class moreInfoService {
    */
   protected function extractAdditionalInformation($idName, $response) {
 
-    $moreInfos = [];
+    $moreInfos = array();
 
     foreach ($response->identifierInformation as $info) {
       $thumbnailUrl = $detailUrl = $backpagePdfUrl = $netarchivePdfUrl = NULL;
@@ -264,7 +265,7 @@ class moreInfoService {
         if (isset($info->coverImage) && $info->coverImage) {
 
           if (!is_array($info->coverImage)) {
-            $info->coverImage = [$info->coverImage];
+            $info->coverImage = array($info->coverImage);
           }
 
           foreach ($info->coverImage as $image) {
