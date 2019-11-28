@@ -152,7 +152,6 @@ function open_moreinfo_object_path($object_id, $object_type = NULL) {
  * Return the URLs for the object
  */
 function open_moreinfo_get_objects($object_id, $object_type = NULL) {
-
   if ( !is_array($object_id) ) {
     $object_id = array($object_id);
   }
@@ -162,7 +161,8 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
 
   foreach ( $object_id as $local_id ) { // ex. [0] => 29316627
     // Determine if the local id is a known negative
-    if ( !cache_get('open_moreinfo:' . $object_type . ':' . $local_id, 'cache') ) {
+    //if ( !cache_get('open_moreinfo:' . $object_type . ':' . $local_id, 'cache') ) {
+    if(TRUE){
       //Mark the image for retrieval;
       $ids[] = $local_id;
     }
@@ -171,9 +171,10 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
     }
   }
 
+
+
   //Try to download the missing images
   try {
-
     $service = new moreInfoService(
       variable_get('open_moreinfo_url',''),
       variable_get('open_moreinfo_username',''),
@@ -182,11 +183,22 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
     );
 
     foreach( $ids as $local_id ) {
-
       //Local ids = Faust numbers.
       $faust_id = explode(':',$local_id);
+      $base_no = (isset($faust_id[0]) && isset($faust_id[1])) ? $faust_id[0] : FALSE;
+      // $bibno might be like 870971-anmeld - we only want the first part
+      if($base_no){
+        $bibno = explode('-',$local_id);
+        $bibno = $bibno[0];
+      }
       $faust_id = isset($faust_id[1]) ? $faust_id[1] : $faust_id[0];
-      $moreinfo = $service->getByFaustNumber($faust_id);
+      if($bibno && $bibno == '870971'){
+        $local_identifier = array('localIdentifier'=>$faust_id, 'libraryCode' => $bibno);
+        $moreinfo = $service->getByLocalIdentifier($local_identifier);
+      }
+      else {
+        $moreinfo = $service->getByFaustNumber($faust_id);
+      }
 
       if ( !empty($moreinfo) ) {
         foreach ( $moreinfo[$faust_id]->getTypes() as $type ) {
@@ -214,6 +226,10 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
   // ex. [870970-basis:29316627][detailUrl]      => http://domain.dk/path/to/type/detailUrl/md5id.jpg
   // ex. [870970-basis:29316627][backpagePdfUrl] => http://domain.dk/path/to/type/backpagePdfUrl/md5id.pdf
   return($objects);
+}
+
+function _open_moreinfo_parse_localid($rec_id){
+
 }
 
 

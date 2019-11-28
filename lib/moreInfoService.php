@@ -86,8 +86,7 @@ class moreInfoService {
    *   Array of the images that were found.
    */
   public function getByLocalIdentifier($local_id) {
-    $identifiers = $this->collectIdentifiers('localIdentifier', $local_id);
-    $response    = $this->sendRequest($identifiers);
+    $response    = $this->sendRequest($local_id);
 
     if(empty($response->identifierInformation)){
       return array();
@@ -233,7 +232,6 @@ class moreInfoService {
     $moreInfos = array();
 
     foreach ( $response->identifierInformation as $info ) {
-
       $thumbnailUrl = $detailUrl = $backpagePdfUrl = $netarchivePdfUrl = NULL;
 
       if ( isset($info->identifierKnown) && $info->identifierKnown ) {
