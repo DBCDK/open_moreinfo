@@ -182,10 +182,15 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
       //Local ids = Faust numbers.
       $faust_id = explode(':', $local_id);
       $base_no = (isset($faust_id[0]) && isset($faust_id[1])) ? $faust_id[0] : FALSE;
-      // $bibno might be like 870971-anmeld - we only want the first part
+      // $base_no might be like 870971-anmeld - we only want the first part
       if ($base_no) {
-        $bibno = explode('-', $local_id);
-        $bibno = $bibno[0];
+        if (strpos($base_no, '-') !== FALSE) {
+          $bibno = explode('-', $local_id);
+          $bibno = $bibno[0];
+        }
+        else {
+          $bibno = $base_no;
+        }
       }
       $faust_id = isset($faust_id[1]) ? $faust_id[1] : $faust_id[0];
       if ($bibno && $bibno == '870971') {
