@@ -161,8 +161,7 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
 
   foreach ( $object_id as $local_id ) { // ex. [0] => 29316627
     // Determine if the local id is a known negative
-    //if ( !cache_get('open_moreinfo:' . $object_type . ':' . $local_id, 'cache') ) {
-    if(TRUE){
+    if ( !cache_get('open_moreinfo:' . $object_type . ':' . $local_id, 'cache') ) {
       //Mark the image for retrieval;
       $ids[] = $local_id;
     }
