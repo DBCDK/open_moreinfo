@@ -7,17 +7,20 @@
 class moreInfoService {
 
   private $wsdlUrl;
+
   private $username;
+
   private $group;
+
   private $password;
 
   /**
-    * Instantiate the moreInfo client.
-    */
+   * Instantiate the moreInfo client.
+   */
   public function __construct($wsdlUrl, $username, $group, $password) {
-    $this->wsdlUrl  = $wsdlUrl;
+    $this->wsdlUrl = $wsdlUrl;
     $this->username = $username;
-    $this->group    = $group;
+    $this->group = $group;
     $this->password = $password;
   }
 
@@ -25,7 +28,7 @@ class moreInfoService {
   /**
    * Get information by ISBN.
    *
-   * @param mixed $isbn
+   * @param  mixed  $isbn
    *   Expects either a single ISBN, or an array of them, for looking up
    *   multiple materials at a time.
    *
@@ -36,9 +39,9 @@ class moreInfoService {
     $isbn = str_replace('-', '', $isbn);
 
     $identifiers = $this->collectIdentifiers('isbn', $isbn);
-    $response    = $this->sendRequest($identifiers);
+    $response = $this->sendRequest($identifiers);
 
-    if(empty($response->identifierInformation)){
+    if (empty($response->identifierInformation)) {
       return array();
     }
 
@@ -49,7 +52,7 @@ class moreInfoService {
   /**
    * Get information by FAUST number.
    *
-   * @param mixed $faust_number
+   * @param  mixed  $faust_number
    *   Expects either a single FAUST number, or an array of them, for looking
    *   up multiple materials at a time.
    *
@@ -58,16 +61,19 @@ class moreInfoService {
    */
   public function getByFaustNumber($faustNumber) {
 
-   //quickfix for test only
-    if ( $faustNumber == '12345678' ){
-      $moreInfos['12345678'] = new moreInfo(_get_test_image_url(), _get_test_image_url(), '', '');
+    //quickfix for test only
+    if ($faustNumber == '12345678') {
+      $moreInfos['12345678'] = new moreInfo(
+        _get_test_image_url(), _get_test_image_url(), '', ''
+      );
+
       return $moreInfos;
     }
 
     $identifiers = $this->collectIdentifiers('faust', $faustNumber);
 
-    $response    = $this->sendRequest($identifiers);
-    if(empty($response->identifierInformation)){
+    $response = $this->sendRequest($identifiers);
+    if (empty($response->identifierInformation)) {
       return array();
     }
 
@@ -78,7 +84,7 @@ class moreInfoService {
   /**
    * Get information by local ID and library code.
    *
-   * @param mixed $local_id
+   * @param  mixed  $local_id
    *   Expects either a single object with localIdentifier and libraryCode
    *   attributes, or an array of such objects.
    *
@@ -86,10 +92,9 @@ class moreInfoService {
    *   Array of the images that were found.
    */
   public function getByLocalIdentifier($local_id) {
-    $identifiers = $this->collectIdentifiers('localIdentifier', $local_id);
-    $response    = $this->sendRequest($identifiers);
+    $response = $this->sendRequest($local_id);
 
-    if(empty($response->identifierInformation)){
+    if (empty($response->identifierInformation)) {
       return array();
     }
 
@@ -101,7 +106,7 @@ class moreInfoService {
    * Expand the provided IDs into the array structure used in sendRequest.
    */
   protected function collectIdentifiers($id_type, $ids) {
-    if ( !is_array($ids) ) {
+    if (!is_array($ids)) {
       $ids = array($ids);
     }
 
@@ -111,8 +116,7 @@ class moreInfoService {
       // to arrays.
       if (is_object($id)) {
         $identifiers[] = (array) $id;
-      }
-      // Otherwise, just map the ID type to the ID number.
+      } // Otherwise, just map the ID type to the ID number.
       else {
         $identifiers[] = array($id_type => $id);
       }
@@ -125,14 +129,16 @@ class moreInfoService {
    * Send request to the moreInfo server, returning the data response.
    */
   protected function sendRequest($identifiers) {
-    $authInfo = array('authenticationUser' => $this->username,
-                      'authenticationGroup' => $this->group,
-                      'authenticationPassword' => $this->password);
+    $authInfo = array(
+      'authenticationUser' => $this->username,
+      'authenticationGroup' => $this->group,
+      'authenticationPassword' => $this->password,
+    );
 
     $options = array(
       'trace' => 1,
-      'exceptions'=> 1,
-      'soap_version'=> SOAP_1_1,
+      'exceptions' => 1,
+      'soap_version' => SOAP_1_1,
       'cache_wsdl' => WSDL_CACHE_NONE,
     );
 
@@ -141,11 +147,14 @@ class moreInfoService {
     $response->identifierInformation = array();
 
     // New moreinfo service.
-    try{
+    try {
       $client = @new SoapClient($this->wsdlUrl, $options);
-    }
-    catch(SoapFault $e){
-      watchdog('moreInfo','Error loading wsdl: %wsdl', array('%wsdl'=>$this->wsdlUrl), WATCHDOG_ERROR);
+    } catch (SoapFault $e) {
+      watchdog(
+        'moreInfo', 'Error loading wsdl: %wsdl',
+        array('%wsdl' => $this->wsdlUrl), WATCHDOG_ERROR
+      );
+
       return $response;
     }
 
@@ -158,51 +167,65 @@ class moreInfoService {
       $offset = 0;
       $ids = array_slice($identifiers, $offset, 40);
       while (!empty($ids)) {
-        $data = $client->moreInfo(array(
-          'authentication' => $authInfo,
-          'identifier' => $ids,
-        ));
+        $data = $client->moreInfo(
+          array(
+            'authentication' => $authInfo,
+            'identifier' => $ids,
+          )
+        );
 
-        if (variable_get('open_moreinfo_enable_logging', false)) {
+        if (variable_get('open_moreinfo_enable_logging', FALSE)) {
           $lastRequest = $client->__getLastRequest();
           watchdog(
-            'open_moreinfo', 'Completed SOAP request: %webservice_url. Request body:  %last_request',
-            array('%webservice_url' => $this->wsdlUrl, '%last_request' => $lastRequest),
-            WATCHDOG_DEBUG,
+            'open_moreinfo',
+            'Completed SOAP request: %webservice_url. Request body:  %last_request',
+            array(
+              '%webservice_url' => $this->wsdlUrl,
+              '%last_request' => $lastRequest,
+            ), WATCHDOG_DEBUG,
             'http://' . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]
           );
         }
 
         // Check if the request went through.
         if ($data->requestStatus->statusEnum != 'ok') {
-          throw new moreInfoServiceException($data->requestStatus->statusEnum . ': ' . $data->requestStatus->errorText);
+          throw new moreInfoServiceException(
+            $data->requestStatus->statusEnum . ': '
+            . $data->requestStatus->errorText
+          );
         }
 
         // Move result into the response object.
         $response->requestStatus = $data->requestStatus;
         if (is_array($data->identifierInformation)) {
           // If more than one element have been found an array is returned.
-          $response->identifierInformation = array_merge($response->identifierInformation, $data->identifierInformation);
+          $response->identifierInformation = array_merge(
+            $response->identifierInformation, $data->identifierInformation
+          );
         }
         else {
           // If only one "cover" have been request, we need to wrap the data in an array.
-          $response->identifierInformation = array_merge($response->identifierInformation, array($data->identifierInformation));
+          $response->identifierInformation = array_merge(
+            $response->identifierInformation,
+            array($data->identifierInformation)
+          );
         }
 
         // Single image... not array but object.
         $offset += 40;
         $ids = array_splice($identifiers, $offset, 40);
       }
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       // Re-throw Addi specific exception.
       throw new moreInfoServiceException($e->getMessage());
     }
 
     // Drupal specific code - consider moving this elsewhere
-    if (variable_get('open_moreinfo_enable_logging', false)) {
+    if (variable_get('open_moreinfo_enable_logging', FALSE)) {
       $stopTime = explode(' ', microtime());
-      $time = floatval(($stopTime[1] + $stopTime[0]) - ($startTime[1] + $startTime[0]));
+      $time = floatval(
+        ($stopTime[1] + $stopTime[0]) - ($startTime[1] + $startTime[0])
+      );
       foreach ($identifiers as $loop_ids) {
         foreach ($loop_ids as $key => $loop_id) {
           $collect_ids[] = $key . ': ' . $loop_id;
@@ -211,14 +234,14 @@ class moreInfoService {
       watchdog(
         'open_moreinfo',
         'Completed requests (' . round($time, 3) . 's): Ids: %ids',
-        array('%ids' => implode(', ', $collect_ids)),
-        WATCHDOG_DEBUG,
+        array('%ids' => implode(', ', $collect_ids)), WATCHDOG_DEBUG,
         'http://' . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]
       );
     }
 
-    if ( !is_array($response->identifierInformation) ) {
-      $response->identifierInformation = array($response->identifierInformation);
+    if (!is_array($response->identifierInformation)) {
+      $response->identifierInformation =
+        array($response->identifierInformation);
     }
 
     return $response;
@@ -232,19 +255,18 @@ class moreInfoService {
 
     $moreInfos = array();
 
-    foreach ( $response->identifierInformation as $info ) {
-
+    foreach ($response->identifierInformation as $info) {
       $thumbnailUrl = $detailUrl = $backpagePdfUrl = $netarchivePdfUrl = NULL;
 
-      if ( isset($info->identifierKnown) && $info->identifierKnown ) {
+      if (isset($info->identifierKnown) && $info->identifierKnown) {
 
-        if ( isset($info->coverImage) && $info->coverImage ) {
+        if (isset($info->coverImage) && $info->coverImage) {
 
-          if ( !is_array($info->coverImage) ) {
+          if (!is_array($info->coverImage)) {
             $info->coverImage = array($info->coverImage);
           }
 
-          foreach ( $info->coverImage as $image ) {
+          foreach ($info->coverImage as $image) {
             switch ($image->imageSize) {
               case 'thumbnail':
                 $thumbnailUrl = $image->_;
@@ -260,19 +282,25 @@ class moreInfoService {
         }
 
         // just pick the first back cover PDF, if there's several
-        if ( !$backpagePdfUrl && isset($info->backPage->_) && $info->backPage->_ ) {
+        if (!$backpagePdfUrl && isset($info->backPage->_)
+          && $info->backPage->_
+        ) {
           $backpagePdfUrl = $info->backPage->_;
         }
 
         // just pick the first netarchive PDF URL, if there's several
-        if ( isset($info->netArchive) && is_array($info->netArchive) && isset($info->netArchive[0]->_) ) {
+        if (isset($info->netArchive) && is_array($info->netArchive)
+          && isset($info->netArchive[0]->_)
+        ) {
           $netarchivePdfUrl = $info->netArchive[0]->_;
         }
-        if ( !$netarchivePdfUrl && isset($info->netArchive->_) ) {
+        if (!$netarchivePdfUrl && isset($info->netArchive->_)) {
           $netarchivePdfUrl = $info->netArchive->_;
         }
 
-        $moreInfo = new moreInfo($thumbnailUrl, $detailUrl, $backpagePdfUrl, $netarchivePdfUrl);
+        $moreInfo = new moreInfo(
+          $thumbnailUrl, $detailUrl, $backpagePdfUrl, $netarchivePdfUrl
+        );
 
         $moreInfos[$info->identifier->$idName] = $moreInfo;
 
