@@ -10,7 +10,7 @@ define('OPEN_MOREINFO_CACHE_LIFETIME', 604800);
 
 /**
  * Implements hook_ting_client_webservice (@see ting_client.module)
- * */
+ **/
 function open_moreinfo_ting_client_webservice() {
   $ret = array();
   $ret['moreInfo']['class'] = 'moreInfo';
@@ -32,16 +32,17 @@ function open_moreinfo_how_r_u() {
  * Implementation of hook_cron().
  */
 function open_moreinfo_cron() {
-  if(module_exists('image')) {
+  if (module_exists('image')) {
     // get default styles
     $styles = image_styles();
-    foreach($styles as $key => $style){
+    foreach ($styles as $key => $style) {
       // delete the images
       image_style_flush($style);
     }
-    cache_clear_all('*', 'cache_image','TRUE');
+    cache_clear_all('*', 'cache_image', 'TRUE');
   }
-  _open_moreinfo_delete_old_files($_SERVER['REQUEST_TIME'] - variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
+  _open_moreinfo_delete_old_files($_SERVER['REQUEST_TIME'] -
+    variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
   drupal_flush_all_caches();
 }
 
@@ -66,16 +67,16 @@ function _open_moreinfo_delete_old_files($time = NULL) {
 
   // Collect potential locations of cover folders
   $moreinfo = new moreInfo();
-  foreach ( $moreinfo->getTypes() as $object_type ) {
+  foreach ($moreinfo->getTypes() as $object_type) {
     $files_dir = file_default_scheme() . '://moreinfo/' . $object_type;
-    if ( is_dir($files_dir) ) {
+    if (is_dir($files_dir)) {
       $moreinfo_files = array_merge($moreinfo_files, _open_moreinfo_get_files($files_dir));
     }
   }
 
   //Delete obsolete files
-  foreach ( $moreinfo_files as $file ) {
-    if ( !$time || (filemtime($file) < $time) ) {
+  foreach ($moreinfo_files as $file) {
+    if (!$time || (filemtime($file) < $time)) {
       file_unmanaged_delete($file);
     }
   }
@@ -90,13 +91,14 @@ function _open_moreinfo_delete_old_files($time = NULL) {
 function _open_moreinfo_get_files($files_path) {
   $files = array();
 
-  foreach ( scandir($files_path) as $path ) {
+  foreach (scandir($files_path) as $path) {
     $file_path = $files_path . DIRECTORY_SEPARATOR . $path;
-    if ( is_dir($file_path) ) {
-      if ( !in_array($path, array('.', '..')) ) {
+    if (is_dir($file_path)) {
+      if (!in_array($path, array('.', '..'))) {
         $files = array_merge($files, _open_moreinfo_get_files($file_path));
       }
-    } else {
+    }
+    else {
       $files[] = $file_path;
     }
   }
@@ -111,40 +113,40 @@ function _open_moreinfo_get_files($files_path) {
  * @return string
  */
 function open_moreinfo_object_path($object_id, $object_type = NULL) {
-
-  if ( empty($object_id) ) {
-    watchdog('moreinfo', 'open_moreinfo_object_path() was called with empty object ID. Object type: %object_type', array('%object_type' => $object_type), WATCHDOG_NOTICE);
+  if (empty($object_id)) {
+    watchdog('moreinfo',
+      'open_moreinfo_object_path() was called with empty object ID. Object type: %object_type',
+      array('%object_type' => $object_type), WATCHDOG_NOTICE);
     return NULL;
   }
 
-  if ( empty($object_type) ) {
-    watchdog('moreinfo', 'open_moreinfo_object_path() was called with empty object type. Object ID: %object_id', array('%object_id' => $object_id), WATCHDOG_NOTICE);
+  if (empty($object_type)) {
+    watchdog('moreinfo',
+      'open_moreinfo_object_path() was called with empty object type. Object ID: %object_id',
+      array('%object_id' => $object_id), WATCHDOG_NOTICE);
     return NULL;
   }
 
   $moreinfo = new moreInfo();
 
-  if ( !in_array($object_type, $moreinfo->getTypes()) ) {
-    watchdog('moreinfo', 'open_moreinfo_object_path() was called with invalid object type. Object ID: %object_id. Object type: %object_type', array('%object_id' => $object_id, '%object_type' => $object_type), WATCHDOG_ERROR);
+  if (!in_array($object_type, $moreinfo->getTypes())) {
+    watchdog('moreinfo',
+      'open_moreinfo_object_path() was called with invalid object type. Object ID: %object_id. Object type: %object_type',
+      array('%object_id' => $object_id, '%object_type' => $object_type), WATCHDOG_ERROR);
     return NULL;
   }
 
-  $path = file_default_scheme() . '://moreinfo/' . $object_type . '/' . md5($object_id) . $moreinfo->getFileType($object_type);
-
-  if ( !file_exists($path) ) {
-
+  $path = file_default_scheme() . '://moreinfo/' . $object_type . '/' . md5($object_id) .
+    $moreinfo->getFileType($object_type);
+  if (!file_exists($path)) {
     $moreinfo = open_moreinfo_get_objects($object_id, $object_type);
-
-    if ( isset($moreinfo[$object_id]) && isset($moreinfo[$object_id][$object_type]) ) {
+    if (isset($moreinfo[$object_id]) && isset($moreinfo[$object_id][$object_type])) {
       $path = $moreinfo[$object_id][$object_type];
     }
-
   }
 
   return $path;
-
 }
-
 
 
 /**
@@ -152,17 +154,16 @@ function open_moreinfo_object_path($object_id, $object_type = NULL) {
  * Return the URLs for the object
  */
 function open_moreinfo_get_objects($object_id, $object_type = NULL) {
-
-  if ( !is_array($object_id) ) {
+  if (!is_array($object_id)) {
     $object_id = array($object_id);
   }
 
   $objects = $ids = array();
   $moreinfo_object = new moreInfo();
 
-  foreach ( $object_id as $local_id ) { // ex. [0] => 29316627
+  foreach ($object_id as $local_id) { // ex. [0] => 29316627
     // Determine if the local id is a known negative
-    if ( !cache_get('open_moreinfo:' . $object_type . ':' . $local_id, 'cache') ) {
+    if (!cache_get('open_moreinfo:' . $object_type . ':' . $local_id, 'cache')) {
       //Mark the image for retrieval;
       $ids[] = $local_id;
     }
@@ -173,7 +174,6 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
 
   //Try to download the missing images
   try {
-
     $service = new moreInfoService(
       variable_get('moreInfo_url',''),
       variable_get('moreInfo_username',''),
@@ -182,46 +182,66 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
     );
 
     foreach( $ids as $local_id ) {
-
       //Local ids = Faust numbers.
-      $faust_id = explode(':',$local_id);
+      $faust_id = explode(':', $local_id);
+      $base_no = (isset($faust_id[0]) && isset($faust_id[1])) ? $faust_id[0] : FALSE;
+      // $base_no might be like 870971-anmeld - we only want the first part
+      if ($base_no) {
+        if (strpos($base_no, '-') !== FALSE) {
+          $bibno = explode('-', $local_id);
+          $bibno = $bibno[0];
+        }
+        else {
+          $bibno = $base_no;
+        }
+      }
       $faust_id = isset($faust_id[1]) ? $faust_id[1] : $faust_id[0];
-      $moreinfo = $service->getByFaustNumber($faust_id);
+      if ($bibno && $bibno == '870971') {
+        $local_identifier = array('localIdentifier' => $faust_id, 'libraryCode' => $bibno);
+        $moreinfo = $service->getByLocalIdentifier($local_identifier);
+      }
+      else {
+        $moreinfo = $service->getByFaustNumber($faust_id);
+      }
 
-      if ( !empty($moreinfo) ) {
-        foreach ( $moreinfo[$faust_id]->getTypes() as $type ) {
+      if (!empty($moreinfo)) {
+        foreach ($moreinfo[$faust_id]->getTypes() as $type) {
           $objects[$local_id][$type] = NULL;
-          if ( !$moreinfo[$faust_id]->$type ) {
+          if (!$moreinfo[$faust_id]->$type) {
             // No object found? Cache this for future reference to avoid unnecessary requests
-            cache_set('open_moreinfo:' . $type . ':' . $local_id, TRUE, 'cache', $_SERVER['REQUEST_TIME'] + variable_get('moreInfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
-          } else {
+            cache_set('open_moreinfo:' . $type . ':' . $local_id, TRUE, 'cache',
+              $_SERVER['REQUEST_TIME'] +
+              variable_get('moreInfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
+          }
+          else {
             $filetype = $moreinfo_object->getFileType($type);
-            if ( $file = _open_moreinfo_fetch_object($local_id, $type, $filetype, $moreinfo[$faust_id]->$type) ) {
+            if ($file = _open_moreinfo_fetch_object($local_id, $type, $filetype,
+              $moreinfo[$faust_id]->$type)) {
               //Generate a path corresponding to the downloaded image
-              $objects[$local_id][$type] = file_default_scheme() . '://moreinfo/' . $type . '/' . md5($local_id) . $moreinfo[$faust_id]->getFileType($type);
+              $objects[$local_id][$type] =
+                file_default_scheme() . '://moreinfo/' . $type . '/' . md5($local_id) .
+                $moreinfo[$faust_id]->getFileType($type);
             }
           }
         }
       }
 
     }
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     error_log('open_moreinfo: Unable to retrieve info from moreInfo: ' . $e->getMessage());
-    watchdog('open_moreinfo', 'Unable to retrieve info from moreInfo: %message', array('%message' => $e->getMessage()), WATCHDOG_ERROR);
+    watchdog('open_moreinfo', 'Unable to retrieve info from moreInfo: %message',
+      array('%message' => $e->getMessage()), WATCHDOG_ERROR);
   }
 
   // Return all image information
   // ex. [870970-basis:29316627][detailUrl]      => http://domain.dk/path/to/type/detailUrl/md5id.jpg
   // ex. [870970-basis:29316627][backpagePdfUrl] => http://domain.dk/path/to/type/backpagePdfUrl/md5id.pdf
-  return($objects);
+  return ($objects);
 }
-
-
 
 /**
  * Helper function to fetch and save a cover image file.
- *
- * @see image_style_create_derivative()
  *
  * @param string $filename
  *    File name, including its path within Drupal's file folder.
@@ -229,28 +249,31 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
  *    URL for the source image file.
  * @return mixed
  *    A file object or FALSE on error.
+ * @see image_style_create_derivative()
+ *
  */
 function _open_moreinfo_fetch_object($object_id, $object_type, $filetype, $object_url = FALSE) {
-
-  if ( !$object_url ) {
+  if (!$object_url) {
     return FALSE;
   }
 
-  $filename = file_default_scheme() . '://moreinfo/' . $object_type . '/' . md5($object_id) . $filetype;
+  $filename =
+    file_default_scheme() . '://moreinfo/' . $object_type . '/' . md5($object_id) . $filetype;
 
   // there's a hard-coded test case for faustnr 12345678 in class AdditionalInformationService
-  if ( $object_id == '12345678' ) {
+  if ($object_id == '12345678') {
     $file = new stdClass();
-    $file->uri =  'public://moreinfo/filetype/md5id.jpg';
+    $file->uri = 'public://moreinfo/filetype/md5id.jpg';
     return $file;
   }
 
   $result = drupal_http_request($object_url);
 
   //Bail if the HTTP request failed
-  if ( !empty($result->error) ) {
+  if (!empty($result->error)) {
     error_log("open_moreinfo: HTTP request failed for $object_url. Error: $result->error");
-    watchdog('open_moreinfo', 'HTTP request failed for %object_url. Error: %error', array('%object_url' => $object_url, '%error' => $result->error), WATCHDOG_NOTICE);
+    watchdog('open_moreinfo', 'HTTP request failed for %object_url. Error: %error',
+      array('%object_url' => $object_url, '%error' => $result->error), WATCHDOG_NOTICE);
     return FALSE;
   }
 
@@ -258,9 +281,10 @@ function _open_moreinfo_fetch_object($object_id, $object_type, $filetype, $objec
   $directory = dirname($filename);
 
   // Build the destination folder tree if it doesn't already exist.
-  if ( !file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS) ) {
+  if (!file_prepare_directory($directory, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
     error_log('open_moreinfo: Failed to create directory: ' . $directory);
-    watchdog('open_moreinfo', 'Failed to create directory: %directory', array('%directory' => $directory), WATCHDOG_ERROR);
+    watchdog('open_moreinfo', 'Failed to create directory: %directory',
+      array('%directory' => $directory), WATCHDOG_ERROR);
     return FALSE;
   }
 

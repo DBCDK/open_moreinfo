@@ -19,6 +19,14 @@ function open_moreinfo_form_ting_client_admin_webservices_settings_alter(&$form,
   $form['open_moreinfo']['#collapsed'] = TRUE;
   $form['open_moreinfo']['#tree'] = FALSE;
 
+  $form['open_moreinfo']['moreInfo_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Url'),
+    '#description' => t('Url to the Additional information webservice'),
+    '#required' => TRUE,
+    '#default_value' => variable_get('moreInfo_url', ''),
+  );
+
   $form['open_moreinfo']['moreInfo_username'] = array(
     '#type' => 'textfield',
     '#title' => t('Username'),
@@ -60,5 +68,4 @@ function open_moreinfo_form_ting_client_admin_webservices_settings_alter(&$form,
     '#title' => t('Enable logging'),
     '#default_value' => variable_get('moreInfo_enable_logging', FALSE),
   );
-
 }
