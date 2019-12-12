@@ -21,7 +21,7 @@ function open_moreinfo_ting_client_webservice() {
 
 /**
  * Implements hook_how_r_u()
- * @return Array
+ * @return array
  */
 function open_moreinfo_how_r_u() {
   return array('MoreInfo' => variable_get('moreInfo_url',''));
@@ -42,7 +42,7 @@ function open_moreinfo_cron() {
     cache_clear_all('*', 'cache_image', 'TRUE');
   }
   _open_moreinfo_delete_old_files($_SERVER['REQUEST_TIME'] -
-    variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
+    variable_get('moreInfo_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
   drupal_flush_all_caches();
 }
 

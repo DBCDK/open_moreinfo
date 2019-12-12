@@ -60,7 +60,7 @@ function open_moreinfo_form_ting_client_admin_webservices_settings_alter(&$form,
       '604800' => t("1 week"),
       '2592000' => t("1 month"),
     ),
-    '#default_value' => variable_get('moreInfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME),
+    '#default_value' => variable_get('moreInfo_lifetime', OPEN_MOREINFO_CACHE_LIFETIME),
   );
 
   $form['open_moreinfo']['moreInfo_enable_logging'] = array(
