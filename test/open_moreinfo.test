@@ -27,15 +27,15 @@ class moreInfoWebTestCase extends DrupalWebTestCase {
     );
 
     $moreinfo_info = array(
-      'url' => variable_get('open_moreinfo_url',NULL),
-      'username' => variable_get('open_moreinfo_username',NULL),
-      'group'    => variable_get('open_moreinfo_group', NULL),
-      'password' => variable_get('open_moreinfo_password', NULL),
+      'url' => variable_get('moreInfo_url',NULL),
+      'username' => variable_get('moreInfo_username',NULL),
+      'group'    => variable_get('moreInfo_group', NULL),
+      'password' => variable_get('moreInfo_password', NULL),
      );
 
     //All variables have been reset to set these again!
     foreach ($moreinfo_info as $k => $v) {
-      variable_set('open_moreinfo_'.$k, $v);
+      variable_set('moreInfo_'.$k, $v);
     }
 
     // allow you to log messages with error_log() to "sites/default/files/test.log"

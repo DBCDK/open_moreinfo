@@ -32,6 +32,7 @@ class moreInfoService {
    *   Expects either a single ISBN, or an array of them, for looking up
    *   multiple materials at a time.
    *
+   * @throws \Exception
    * @return array
    *   Array of the images that were found.
    */
@@ -56,6 +57,7 @@ class moreInfoService {
    *   Expects either a single FAUST number, or an array of them, for looking
    *   up multiple materials at a time.
    *
+   * @throws \Exception
    * @return array
    *   Array of the images that were found.
    */
@@ -88,6 +90,7 @@ class moreInfoService {
    *   Expects either a single object with localIdentifier and libraryCode
    *   attributes, or an array of such objects.
    *
+   * @throws \Exception
    * @return array
    *   Array of the images that were found.
    */
@@ -174,7 +177,7 @@ class moreInfoService {
           )
         );
 
-        if (variable_get('open_moreinfo_enable_logging', FALSE)) {
+        if (variable_get('moreInfo_enable_logging', FALSE)) {
           $lastRequest = $client->__getLastRequest();
           watchdog(
             'open_moreinfo',
@@ -221,7 +224,7 @@ class moreInfoService {
     }
 
     // Drupal specific code - consider moving this elsewhere
-    if (variable_get('open_moreinfo_enable_logging', FALSE)) {
+    if (variable_get('moreInfo_enable_logging', FALSE)) {
       $stopTime = explode(' ', microtime());
       $time = floatval(
         ($stopTime[1] + $stopTime[0]) - ($startTime[1] + $startTime[0])

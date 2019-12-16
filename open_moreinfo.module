@@ -10,21 +10,21 @@ define('OPEN_MOREINFO_CACHE_LIFETIME', 604800);
 
 /**
  * Implements hook_ting_client_webservice (@see ting_client.module)
- * */
+ **/
 function open_moreinfo_ting_client_webservice() {
   $ret = array();
-  $ret['open_moreinfo']['class'] = 'open_moreinfo';
-  $ret['open_moreinfo']['url'] = 'open_moreinfo_url';
+  $ret['moreInfo']['class'] = 'moreInfo';
+  $ret['moreInfo']['url']   = 'moreInfo_url';
   return $ret;
 }
 
 
 /**
  * Implements hook_how_r_u()
- * @return Array
+ * @return array
  */
 function open_moreinfo_how_r_u() {
-  return array('MoreInfo' => variable_get('open_moreinfo_url', ''));
+  return array('MoreInfo' => variable_get('moreInfo_url',''));
 }
 
 
@@ -42,7 +42,7 @@ function open_moreinfo_cron() {
     cache_clear_all('*', 'cache_image', 'TRUE');
   }
   _open_moreinfo_delete_old_files($_SERVER['REQUEST_TIME'] -
-    variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
+    variable_get('moreInfo_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
   drupal_flush_all_caches();
 }
 
@@ -174,11 +174,14 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
 
   //Try to download the missing images
   try {
-    $service = new moreInfoService(variable_get('open_moreinfo_url', ''),
-      variable_get('open_moreinfo_username', ''), variable_get('open_moreinfo_group', ''),
-      variable_get('open_moreinfo_password', ''));
+    $service = new moreInfoService(
+      variable_get('moreInfo_url',''),
+      variable_get('moreInfo_username',''),
+      variable_get('moreInfo_group',''),
+      variable_get('moreInfo_password','')
+    );
 
-    foreach ($ids as $local_id) {
+    foreach( $ids as $local_id ) {
       //Local ids = Faust numbers.
       $faust_id = explode(':', $local_id);
       $base_no = (isset($faust_id[0]) && isset($faust_id[1])) ? $faust_id[0] : FALSE;
@@ -208,7 +211,7 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
             // No object found? Cache this for future reference to avoid unnecessary requests
             cache_set('open_moreinfo:' . $type . ':' . $local_id, TRUE, 'cache',
               $_SERVER['REQUEST_TIME'] +
-              variable_get('open_moreinfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
+              variable_get('moreInfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
           }
           else {
             $filetype = $moreinfo_object->getFileType($type);
