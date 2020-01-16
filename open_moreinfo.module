@@ -43,7 +43,6 @@ function open_moreinfo_cron() {
   }
   _open_moreinfo_delete_old_files($_SERVER['REQUEST_TIME'] -
     variable_get('moreInfo_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
-  drupal_flush_all_caches();
 }
 
 
