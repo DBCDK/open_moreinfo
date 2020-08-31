@@ -197,7 +197,7 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
         }
       }
       $faust_id = isset($faust_id[1]) ? $faust_id[1] : $faust_id[0];
-      if ($bibno && $bibno == '870971') {
+      if (isset($bibno) && $bibno == '870971') {
         $local_identifier = array('localIdentifier' => $faust_id, 'libraryCode' => $bibno);
         $moreinfo = $service->getByLocalIdentifier($local_identifier);
       }
