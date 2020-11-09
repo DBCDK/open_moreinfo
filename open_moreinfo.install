@@ -5,4 +5,21 @@
  * Install file for open_moreinfo
  */
 
+/**
+ * Implements hook_schema().
+ */
+function open_moreinfo_schema() {
+  $schema['cache_open_moreinfo'] = drupal_get_schema_unprocessed('system', 'cache');
+  return $schema;
+}
+
+/**
+ * hook_update
+ * make the cache table
+ **/
+function open_moreinfo_update_7001() {
+  $schema = open_moreinfo_schema();
+  db_create_table('cache_open_moreinfo', $schema['cache_open_moreinfo']);
+}
+
 
