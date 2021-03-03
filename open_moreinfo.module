@@ -45,7 +45,6 @@ function open_moreinfo_cron() {
     variable_get('moreInfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
 
   cache_clear_all('*', 'cache_open_moreinfo', 'TRUE');
-
 }
 
 
@@ -76,7 +75,7 @@ function _open_moreinfo_delete_old_files($time = NULL) {
     }
   }
 
-  //Delete obsolete files - the right way.
+  //Delete obsolete files
   foreach ($moreinfo_files as $file) {
     if (!$time || (filemtime($file) < $time)) {
       $query = "SELECT fm.fid " .
