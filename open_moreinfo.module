@@ -82,9 +82,10 @@ function _open_moreinfo_delete_old_files($time = NULL) {
                 "FROM {file_managed} fm LEFT JOIN {file_usage} fu ON fu.fid = fm.fid " .
                 "WHERE uri = :uri";
       $fid = db_query($query, array(':uri' => $file))->fetchField();
-
-      $file = file_load($fid);
-      file_delete($file);
+      if ($fid !== FALSE) {
+        $file = file_load($fid);
+        file_delete($file);
+      }
     }
   }
 }
