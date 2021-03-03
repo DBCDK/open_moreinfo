@@ -77,7 +77,15 @@ function _open_moreinfo_delete_old_files($time = NULL) {
 
   //Delete obsolete files
   foreach ($moreinfo_files as $file) {
-    if (!$time || (filemtime($file) < $time)) {
+    $delete = FALSE;
+    if (file_exists($file)) {
+      if (!$time || (filemtime($file) < $time)) {
+        $delete = TRUE;
+      }
+    } else {
+      $delete = TRUE;
+    }
+    if ($delete) {
       $query = "SELECT fm.fid " .
                 "FROM {file_managed} fm LEFT JOIN {file_usage} fu ON fu.fid = fm.fid " .
                 "WHERE uri = :uri";
