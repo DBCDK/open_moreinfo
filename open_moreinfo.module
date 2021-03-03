@@ -76,10 +76,16 @@ function _open_moreinfo_delete_old_files($time = NULL) {
     }
   }
 
-  //Delete obsolete files
+  //Delete obsolete files - the right way.
   foreach ($moreinfo_files as $file) {
     if (!$time || (filemtime($file) < $time)) {
-      file_unmanaged_delete($file);
+      $query = "SELECT fm.fid " .
+                "FROM {file_managed} fm LEFT JOIN {file_usage} fu ON fu.fid = fm.fid " .
+                "WHERE uri = :uri";
+      $fid = db_query($query, array(':uri' => $file))->fetchField();
+
+      $file = file_load($fid);
+      file_delete($file);
     }
   }
 }
