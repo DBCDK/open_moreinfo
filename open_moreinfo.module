@@ -45,7 +45,6 @@ function open_moreinfo_cron() {
     variable_get('moreInfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
 
   cache_clear_all('*', 'cache_open_moreinfo', 'TRUE');
-
 }
 
 
@@ -78,8 +77,36 @@ function _open_moreinfo_delete_old_files($time = NULL) {
 
   //Delete obsolete files
   foreach ($moreinfo_files as $file) {
-    if (!$time || (filemtime($file) < $time)) {
-      file_unmanaged_delete($file);
+    $file_old = FALSE;
+    $file_exists = FALSE;
+    if (file_exists($file)) {
+      // The filemtime will throw an error if the file doesn't exists. Hence the file_exists.
+      // If the file exists, we only want to delete it if it's to old.
+      if (!$time || (filemtime($file) < $time)) {
+        $file_old = TRUE;
+      }
+      // This is used further down for the file_unmanaged_delete, if there aren't any record in the file_managed table.
+      $file_exists = TRUE;
+    } else {
+      // We need to delete the record in the file_managed table, if the file does not exist.
+      $file_old = TRUE;
+    }
+    if ($file_old) {
+      // file_usage will tell us if the file is being used or not.
+      $query = "SELECT fm.fid " .
+                "FROM {file_managed} fm LEFT JOIN {file_usage} fu ON fu.fid = fm.fid " .
+                "WHERE fu.fid IS NULL AND uri = :uri";
+      $fid = db_query($query, array(':uri' => $file))->fetchField();
+      if ($fid !== FALSE) {
+        // If the record is there and the file is old, filemtime(), then delete it.
+        $file = file_load($fid);
+        file_delete($file);
+      } else {
+        // If the record is not in the file_managed table, then we need to delete it the hard way.
+        if ($file_exists) {
+          file_unmanaged_delete($file);
+        }
+      }
     }
   }
 }
