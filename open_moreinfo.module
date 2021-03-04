@@ -78,13 +78,17 @@ function _open_moreinfo_delete_old_files($time = NULL) {
   //Delete obsolete files
   foreach ($moreinfo_files as $file) {
     $delete = FALSE;
+    $file_exists = FALSE;
     if (file_exists($file)) {
-      // The filemtime will throw an error if the file doesn't exists.
+      // The filemtime will throw an error if the file doesn't exists. Hence the file_exists.
+      // If the file exists, we only want to delete it if it's to old.
       if (!$time || (filemtime($file) < $time)) {
         $delete = TRUE;
       }
+      // This is used further down for the file_unmanaged_delete, if there aren't any record in the file_managed table.
+      $file_exists = TRUE;
     } else {
-      // We need to delete the record in the file_managed table anyway.
+      // We need to delete the record in the file_managed table, if the file does not exist.
       $delete = TRUE;
     }
     if ($delete) {
@@ -94,9 +98,14 @@ function _open_moreinfo_delete_old_files($time = NULL) {
                 "WHERE fu.fid IS NULL AND uri = :uri";
       $fid = db_query($query, array(':uri' => $file))->fetchField();
       if ($fid !== FALSE) {
-        // If the record is there and the file is old ( filemtime() ), then delete it.
+        // If the record is there and the file is old, filemtime(), then delete it.
         $file = file_load($fid);
         file_delete($file);
+      } else {
+        // If the record is not in the file_managed table, then we need to delete it the hard way.
+        if ($file_exists) {
+          file_unmanaged_delete($file);
+        }
       }
     }
   }
