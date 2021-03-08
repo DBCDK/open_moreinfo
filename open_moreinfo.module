@@ -49,21 +49,12 @@ function open_moreinfo_cron() {
 
 
 /**
- * Implementation of hook_flush_caches.
- */
-function open_moreinfo_flush_caches() {
-  _open_moreinfo_delete_old_files();
-}
-
-
-/**
  * Delete moreinfo files.
  *
- * @param int $time Timestamp where older files will be deleted.
- * Omit or set to NULL to delete all files.
+ * @param $time
+ *  timestamp. where older files will be deleted.
  */
-function _open_moreinfo_delete_old_files($time = NULL) {
-
+function _open_moreinfo_delete_old_files($time) {
   $moreinfo_files = array();
 
   // Collect potential locations of cover folders
@@ -76,40 +67,43 @@ function _open_moreinfo_delete_old_files($time = NULL) {
   }
 
   //Delete obsolete files
-  foreach ($moreinfo_files as $file) {
+  foreach ($moreinfo_files as $file_path) {
     $file_old = FALSE;
     $file_exists = FALSE;
-    if (file_exists($file)) {
+    if (file_exists($file_path)) {
       // The filemtime will throw an error if the file doesn't exists. Hence the file_exists.
       // If the file exists, we only want to delete it if it's to old.
-      if (!$time || (filemtime($file) < $time)) {
+      if (filemtime($file_path) < $time) {
         $file_old = TRUE;
       }
       // This is used further down for the file_unmanaged_delete, if there aren't any record in the file_managed table.
       $file_exists = TRUE;
-    } else {
+    }
+    else {
       // We need to delete the record in the file_managed table, if the file does not exist.
       $file_old = TRUE;
     }
     if ($file_old) {
-
       // file_usage will tell us if the file is being used or not.
       $fm = db_select('file_managed', 'fm');
       $fm->leftJoin('file_usage', 'fu', 'fm.fid = fu.fid');
       $fid = $fm->fields('fm', ['fid'])
         ->isNull('fu.fid')
-        ->condition('fm.uri', $file, '=')
+        ->condition('fm.uri', $file_path, '=')
         ->execute()
         ->fetchField();
 
       if ($fid !== FALSE) {
         // If the record is there and the file is old, filemtime(), then delete it.
         $file = file_load($fid);
-        file_delete($file);
-      } else {
+        if ($file) {
+          file_delete($file);
+        }
+      }
+      else {
         // If the record is not in the file_managed table, then we need to delete it the hard way.
         if ($file_exists) {
-          file_unmanaged_delete($file);
+          file_unmanaged_delete($file_path);
         }
       }
     }
