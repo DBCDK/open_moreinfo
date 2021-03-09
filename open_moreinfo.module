@@ -56,24 +56,29 @@ function open_moreinfo_cron() {
  */
 function _open_moreinfo_delete_old_files($time) {
 
-  $fm = db_select('file_managed', 'fm');
-  $fm->leftJoin('file_usage', 'fu', 'fm.fid = fu.fid');
-  $rows = $fm->fields('fm', ['fid'])
-    ->isNull('fu.fid')
-    ->condition('fm.timestamp', $time, '<')
-    ->condition('fm.uri', db_like('public://moreinfo') . '%', 'LIKE')
-    ->execute()
-    ->fetchAllKeyed(0,0);
+  $moreinfo_files = array();
 
-  $files = file_load_multiple($rows);
+  // Collect potential locations of cover folders
+  $moreinfo = new moreInfo();
+  foreach ($moreinfo->getTypes() as $object_type) {
+    $files_dir = file_default_scheme() . '://moreinfo/' . $object_type;
+    if (is_dir($files_dir)) {
+      $moreinfo_files = array_merge($moreinfo_files, _open_moreinfo_get_files($files_dir));
+    }
+  }
 
-  foreach($files as $file) {
-    if (!is_bool($file)) {
-      file_delete($file);
+  //Delete obsolete files
+  foreach ($moreinfo_files as $file) {
+    // If the file somehow has been deleted - we do not want to handle it.
+    if (file_exists($file)) {
+      // Is it to old?
+      if (!$time || (filemtime($file) < $time)) {
+        // If yes - then delete.
+        file_unmanaged_delete($file);
+      }
     }
   }
 }
-
 
 /**
  * Retrieve all files under a path recursively
@@ -293,8 +298,8 @@ function _open_moreinfo_fetch_object($object_id, $object_type, $filetype, $objec
     return FALSE;
   }
 
-  return file_save_data($result->data, $filename, FILE_EXISTS_REPLACE);
-}
+  return file_unmanaged_save_data($result->data, $filename, FILE_EXISTS_REPLACE);
+ }
 
 
 /**
