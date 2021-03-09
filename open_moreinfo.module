@@ -8,6 +8,25 @@ module_load_include('inc', 'open_moreinfo', 'open_moreinfo.admin');
 
 define('OPEN_MOREINFO_CACHE_LIFETIME', 604800);
 
+function open_moreinfo_menu() {
+  $items = array();
+
+  $items['moreinfo/test'] = array(
+    'title' => 'moreinfo test',
+    'page callback' => 'open_moreinfo_test',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+function open_moreinfo_test() {
+  $time = ($_SERVER['REQUEST_TIME'] -
+  variable_get('moreInfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
+  _open_moreinfo_delete_old_files($time);
+}
+
 /**
  * Implements hook_ting_client_webservice (@see ting_client.module)
  **/
@@ -55,57 +74,21 @@ function open_moreinfo_cron() {
  *  timestamp. where older files will be deleted.
  */
 function _open_moreinfo_delete_old_files($time) {
-  $moreinfo_files = array();
 
-  // Collect potential locations of cover folders
-  $moreinfo = new moreInfo();
-  foreach ($moreinfo->getTypes() as $object_type) {
-    $files_dir = file_default_scheme() . '://moreinfo/' . $object_type;
-    if (is_dir($files_dir)) {
-      $moreinfo_files = array_merge($moreinfo_files, _open_moreinfo_get_files($files_dir));
-    }
-  }
+  $fm = db_select('file_managed', 'fm');
+  $fm->leftJoin('file_usage', 'fu', 'fm.fid = fu.fid');
+  $rows = $fm->fields('fm', ['fid'])
+    ->isNull('fu.fid')
+    ->condition('fm.timestamp', $time, '<')
+    ->condition('fm.uri', db_like('public://moreinfo') . '%', 'LIKE')
+    ->execute()
+    ->fetchAllKeyed(0,0);
 
-  //Delete obsolete files
-  foreach ($moreinfo_files as $file_path) {
-    $file_old = FALSE;
-    $file_exists = FALSE;
-    if (file_exists($file_path)) {
-      // The filemtime will throw an error if the file doesn't exists. Hence the file_exists.
-      // If the file exists, we only want to delete it if it's to old.
-      if (filemtime($file_path) < $time) {
-        $file_old = TRUE;
-      }
-      // This is used further down for the file_unmanaged_delete, if there aren't any record in the file_managed table.
-      $file_exists = TRUE;
-    }
-    else {
-      // We need to delete the record in the file_managed table, if the file does not exist.
-      $file_old = TRUE;
-    }
-    if ($file_old) {
-      // file_usage will tell us if the file is being used or not.
-      $fm = db_select('file_managed', 'fm');
-      $fm->leftJoin('file_usage', 'fu', 'fm.fid = fu.fid');
-      $fid = $fm->fields('fm', ['fid'])
-        ->isNull('fu.fid')
-        ->condition('fm.uri', $file_path, '=')
-        ->execute()
-        ->fetchField();
+  $files = file_load_multiple($rows);
 
-      if ($fid !== FALSE) {
-        // If the record is there and the file is old, filemtime(), then delete it.
-        $file = file_load($fid);
-        if ($file) {
-          file_delete($file);
-        }
-      }
-      else {
-        // If the record is not in the file_managed table, then we need to delete it the hard way.
-        if ($file_exists) {
-          file_unmanaged_delete($file_path);
-        }
-      }
+  foreach($files as $file) {
+    if (!is_bool($file)) {
+      file_delete($file);
     }
   }
 }
