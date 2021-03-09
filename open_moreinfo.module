@@ -8,25 +8,6 @@ module_load_include('inc', 'open_moreinfo', 'open_moreinfo.admin');
 
 define('OPEN_MOREINFO_CACHE_LIFETIME', 604800);
 
-function open_moreinfo_menu() {
-  $items = array();
-
-  $items['moreinfo/test'] = array(
-    'title' => 'moreinfo test',
-    'page callback' => 'open_moreinfo_test',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-  );
-
-  return $items;
-}
-
-function open_moreinfo_test() {
-  $time = ($_SERVER['REQUEST_TIME'] -
-  variable_get('moreInfo_cache_lifetime', OPEN_MOREINFO_CACHE_LIFETIME));
-  _open_moreinfo_delete_old_files($time);
-}
-
 /**
  * Implements hook_ting_client_webservice (@see ting_client.module)
  **/
