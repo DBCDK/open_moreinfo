@@ -295,7 +295,9 @@ class moreInfoService {
         if (isset($info->netArchive) && is_array($info->netArchive)
           && isset($info->netArchive[0]->_)
         ) {
-          $netarchivePdfUrl = $info->netArchive[0]->_;
+          foreach($info->netArchive as $net_archive) {
+            $netarchivePdfUrl[] = $net_archive->_;
+          }
         }
         if (!$netarchivePdfUrl && isset($info->netArchive->_)) {
           $netarchivePdfUrl = $info->netArchive->_;
