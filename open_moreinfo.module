@@ -229,10 +229,17 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
                   $local_id, $type, $filetype, $moreinfo_file
                 )) {
                   //Generate a path corresponding to the downloaded image
-                  $objects[$local_id][$type][] =
-                    file_default_scheme() . '://moreinfo/' . $type . '/' .
-                    md5($local_id) . md5($moreinfo_file) .
-                    $moreinfo[$faust_id]->getFileType($type);
+                  if ($filetype === ".pdf") {
+                    $objects[$local_id][$type][] =
+                      file_default_scheme() . '://moreinfo/' . $type . '/' .
+                      md5($local_id) . md5($moreinfo_file) .
+                      $moreinfo[$faust_id]->getFileType($type);
+                  } else {
+                    $objects[$local_id][$type][] =
+                      file_default_scheme() . '://moreinfo/' . $type . '/' .
+                      md5($local_id) .
+                      $moreinfo[$faust_id]->getFileType($type);
+                  }
                 }
               }
             }
@@ -269,8 +276,13 @@ function _open_moreinfo_fetch_object($object_id, $object_type, $filetype, $objec
     return FALSE;
   }
 
-  $filename = file_default_scheme() . '://moreinfo/' . $object_type . '/' .
-    md5($object_id) . md5($object_url) . $filetype;
+  if ($filetype === ".pdf") {
+    $filename = file_default_scheme() . '://moreinfo/' . $object_type . '/' .
+      md5($object_id) . md5($object_url) . $filetype;
+  } else {
+    $filename = file_default_scheme() . '://moreinfo/' . $object_type . '/' .
+      md5($object_id) . $filetype;
+  }
 
   // there's a hard-coded test case for faustnr 12345678 in class AdditionalInformationService
   if ($object_id == '12345678') {
