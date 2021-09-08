@@ -272,10 +272,10 @@ class moreInfoService {
           foreach ($info->coverImage as $image) {
             switch ($image->imageSize) {
               case 'thumbnail':
-                $thumbnailUrl = $image->_;
+                $thumbnailUrl[] = $image->_;
                 break;
               case 'detail':
-                $detailUrl = $image->_;
+                $detailUrl[] = $image->_;
                 break;
               default:
                 // Do nothing other image sizes may appear but ignore them for now
@@ -288,7 +288,7 @@ class moreInfoService {
         if (!$backpagePdfUrl && isset($info->backPage->_)
           && $info->backPage->_
         ) {
-          $backpagePdfUrl = $info->backPage->_;
+          $backpagePdfUrl[] = $info->backPage->_;
         }
 
         // just pick the first netarchive PDF URL, if there's several
@@ -300,7 +300,7 @@ class moreInfoService {
           }
         }
         if (!$netarchivePdfUrl && isset($info->netArchive->_)) {
-          $netarchivePdfUrl = $info->netArchive->_;
+          $netarchivePdfUrl[] = $info->netArchive->_;
         }
 
         $moreInfo = new moreInfo(

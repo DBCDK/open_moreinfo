@@ -235,16 +235,6 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
                     $moreinfo[$faust_id]->getFileType($type);
                 }
               }
-            } else {
-              if ($file = _open_moreinfo_fetch_object(
-                $local_id, $type, $filetype, $moreinfo[$faust_id]->$type
-              )) {
-                //Generate a path corresponding to the downloaded image
-                $objects[$local_id][$type] =
-                  file_default_scheme() . '://moreinfo/' . $type . '/' .
-                  md5($local_id) . md5($moreinfo[$faust_id]->$type) .
-                  $moreinfo[$faust_id]->getFileType($type);
-              }
             }
           }
         }
@@ -279,8 +269,8 @@ function _open_moreinfo_fetch_object($object_id, $object_type, $filetype, $objec
     return FALSE;
   }
 
-  $filename =
-    file_default_scheme() . '://moreinfo/' . $object_type . '/' . md5($object_id) . md5($object_url) . $filetype;
+  $filename = file_default_scheme() . '://moreinfo/' . $object_type . '/' .
+    md5($object_id) . md5($object_url) . $filetype;
 
   // there's a hard-coded test case for faustnr 12345678 in class AdditionalInformationService
   if ($object_id == '12345678') {
