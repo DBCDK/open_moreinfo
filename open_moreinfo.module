@@ -222,12 +222,26 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
           }
           else {
             $filetype = $moreinfo_object->getFileType($type);
-            if ($file = _open_moreinfo_fetch_object($local_id, $type, $filetype,
-              $moreinfo[$faust_id]->$type)) {
-              //Generate a path corresponding to the downloaded image
-              $objects[$local_id][$type] =
-                file_default_scheme() . '://moreinfo/' . $type . '/' . md5($local_id) .
-                $moreinfo[$faust_id]->getFileType($type);
+
+            if (is_array($moreinfo[$faust_id]->$type)) {
+              foreach($moreinfo[$faust_id]->$type as $moreinfo_file) {
+                if ($file = _open_moreinfo_fetch_object(
+                  $local_id, $type, $filetype, $moreinfo_file
+                )) {
+                  //Generate a path corresponding to the downloaded image
+                  if ($filetype === ".pdf") {
+                    $objects[$local_id][$type][] =
+                      file_default_scheme() . '://moreinfo/' . $type . '/' .
+                      md5($local_id) . md5($moreinfo_file) .
+                      $moreinfo[$faust_id]->getFileType($type);
+                  } else {
+                    $objects[$local_id][$type][] =
+                      file_default_scheme() . '://moreinfo/' . $type . '/' .
+                      md5($local_id) .
+                      $moreinfo[$faust_id]->getFileType($type);
+                  }
+                }
+              }
             }
           }
         }
@@ -248,24 +262,27 @@ function open_moreinfo_get_objects($object_id, $object_type = NULL) {
 
 /**
  * Helper function to fetch and save a cover image file.
- *
- * @param string $filename
- *    File name, including its path within Drupal's file folder.
- * @param string $image_url
- *    URL for the source image file.
- *
- * @return mixed
- *    A file object or FALSE on error.
  * @see image_style_create_derivative()
  *
+ * @param $object_id
+ * @param $object_type
+ * @param $filetype
+ * @param false|string $object_url
+ *
+ * @return false|\stdClass|string
  */
 function _open_moreinfo_fetch_object($object_id, $object_type, $filetype, $object_url = FALSE) {
   if (!$object_url) {
     return FALSE;
   }
 
-  $filename =
-    file_default_scheme() . '://moreinfo/' . $object_type . '/' . md5($object_id) . $filetype;
+  if ($filetype === ".pdf") {
+    $filename = file_default_scheme() . '://moreinfo/' . $object_type . '/' .
+      md5($object_id) . md5($object_url) . $filetype;
+  } else {
+    $filename = file_default_scheme() . '://moreinfo/' . $object_type . '/' .
+      md5($object_id) . $filetype;
+  }
 
   // there's a hard-coded test case for faustnr 12345678 in class AdditionalInformationService
   if ($object_id == '12345678') {
