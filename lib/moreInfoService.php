@@ -229,9 +229,14 @@ class moreInfoService {
       $time = floatval(
         ($stopTime[1] + $stopTime[0]) - ($startTime[1] + $startTime[0])
       );
-      foreach ($identifiers as $loop_ids) {
-        foreach ($loop_ids as $key => $loop_id) {
-          $collect_ids[] = $key . ': ' . $loop_id;
+      $collect_ids = array();
+      if (is_array($identifiers)) {
+        foreach ($identifiers as $loop_ids) {
+          if (is_array($loop_ids)) {
+            foreach ($loop_ids as $key => $loop_id) {
+              $collect_ids[] = $key . ': ' . $loop_id;
+            }
+          }
         }
       }
       watchdog(
