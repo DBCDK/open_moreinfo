@@ -138,12 +138,31 @@ class moreInfoService {
       'authenticationPassword' => $this->password,
     );
 
-    $options = array(
-      'trace' => 1,
-      'exceptions' => 1,
+    $endpoint = 'https://moreinfo-facade.dbc.dk/2.11/';
+
+    /*
+     * Endpoint (location)	Facaden modtager kun POST på /2.11/ – ikke på /2.11/moreInfo.	https://moreinfo-facade.dbc.dk/2.11/
+     *
+     * SOAPAction (header)	Payara matcher operationen via denne streng. Den skal stemme med det, der står i WSDL’en for moreInfo.	SOAPAction: http://moreinfo.addi.dk
+     *
+     * SOAP-version	MoreInfo kører SOAP 1.1, så Content-Type: text/xml; charset=utf-8 er korrekt.	SOAP_1_1
+     *
+     * WSDL	Du kan stadig bruge WSDL til datatyper/funktioner, men location skal overstyres, da den i WSDL’en peger på root /.	new SoapClient($wsdl, ['location' => 'https://…/2.11/'])
+     **/
+
+    $options = [
+      'trace'        => 1,
+      'exceptions'   => 1,
+      'cache_wsdl'   => WSDL_CACHE_NONE,
       'soap_version' => SOAP_1_1,
-      'cache_wsdl' => WSDL_CACHE_NONE,
-    );
+      'location'     => $endpoint, // post til /2.11/ som Postman
+      // match Postmans SOAPAction præcist:
+      'stream_context' => stream_context_create([
+        'http' => [
+          'header' => "SOAPAction: http://moreinfo.addi.dk\r\n"
+        ]
+      ]),
+    ];
 
     // Start on the responce object.
     $response = new stdClass();
@@ -151,7 +170,7 @@ class moreInfoService {
 
     // New moreinfo service.
     try {
-      $client = @new SoapClient($this->wsdlUrl, $options);
+      $client = new SoapClient($this->wsdlUrl, $options);
     } catch (SoapFault $e) {
       watchdog(
         'moreInfo', 'Error loading wsdl: %wsdl',
@@ -220,7 +239,21 @@ class moreInfoService {
       }
     } catch (Exception $e) {
       // Re-throw Addi specific exception.
-      throw new moreInfoServiceException($e->getMessage());
+
+      // Kig på disse 4 for at se præcis request/response/headers
+
+      $lastRequestHeaders = $client->__getLastRequestHeaders();
+      $lastRequest = $client->__getLastRequest();
+      $lastResponseHeaders = $client->__getLastResponseHeaders();
+      $lastResponse = $client->__getLastResponse();
+
+      error_log($client->__getLastRequestHeaders());
+      error_log($client->__getLastRequest());
+      error_log($client->__getLastResponseHeaders());
+      error_log($client->__getLastResponse());
+      throw $e;
+
+      //throw new moreInfoServiceException($e->getMessage());
     }
 
     // Drupal specific code - consider moving this elsewhere
